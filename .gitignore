@@ -1,0 +1,25 @@
+# Build output
+target/
+**/target/
+
+# IDE
+.idea/
+**/.idea/
+*.iml
+
+# Local env/secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Logs
+*.log
+logs/
+**/logs/
+
+# OS
+.DS_Store
+Thumbs.db
