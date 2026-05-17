@@ -1,0 +1,12 @@
+target/
+.idea/
+*.iml
+
+# Local env/secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
