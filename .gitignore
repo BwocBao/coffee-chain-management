@@ -23,3 +23,9 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# file
+BackendTransactionTemplates.java
+oracle_transaction.sql
+seed_rbac_chinhanh_8.sql
+noi_dung_viet_tiep_chuong_5_xu_ly_dong_thoi.docx
