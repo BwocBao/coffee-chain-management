@@ -1,9 +1,9 @@
 package com.coffeechain.controller;
 
 import com.coffeechain.dto.BaseResponse;
-import com.coffeechain.dto.CreateUserLookupResponse;
-import com.coffeechain.dto.CreateUserRequest;
-import com.coffeechain.dto.CreateUserResponse;
+import com.coffeechain.dto.response.CreateUserLookupResponse;
+import com.coffeechain.dto.request.CreateUserRequest;
+import com.coffeechain.dto.response.CreateUserResponse;
 import com.coffeechain.security.AuthGuard;
 import com.coffeechain.security.SessionUser;
 import com.coffeechain.service.UserService;

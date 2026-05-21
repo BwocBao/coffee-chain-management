@@ -1,16 +1,15 @@
 package com.coffeechain.service;
 
-import com.coffeechain.dto.ForgotPasswordRequest;
-import com.coffeechain.dto.ForgotPasswordResponse;
-import com.coffeechain.dto.ResetPasswordRequest;
-import com.coffeechain.dto.VerifyResetCodeRequest;
+import com.coffeechain.dto.request.ForgotPasswordRequest;
+import com.coffeechain.dto.response.ForgotPasswordResponse;
+import com.coffeechain.dto.request.ResetPasswordRequest;
+import com.coffeechain.dto.request.VerifyResetCodeRequest;
 import com.coffeechain.exception.AppException;
 import com.coffeechain.repository.NguoiDungRecord;
 import com.coffeechain.repository.NguoiDungRepository;
 import com.coffeechain.security.PasswordUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;

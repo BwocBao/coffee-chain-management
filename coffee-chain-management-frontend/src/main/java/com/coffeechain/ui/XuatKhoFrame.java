@@ -198,6 +198,7 @@ public class XuatKhoFrame extends JFrame {
 
         addLabel(card, "Loại xuất:", 310, 12, 100, 18);
         addCombo(card, exportTypeCombo, 310, 34, 250, 34);
+        exportTypeCombo.setRenderer(new ExportTypeComboRenderer());
 
         addLabel(card, "Ngày xuất:", 600, 12, 100, 18);
         addField(card, createdDateField, 600, 34, 220, 34, false, LocalDate.now().toString());
@@ -1177,6 +1178,60 @@ public class XuatKhoFrame extends JFrame {
         }
     }
 
+    private static String exportTypeDisplayText(OptionDto option) {
+        if (option == null) {
+            return "";
+        }
+
+        String code = option.getName();
+        if ("INTERNAL_USE".equals(code)) {
+            return "Xuất dùng nội bộ";
+        }
+        if ("RETURN_SUPPLIER".equals(code)) {
+            return "Trả nhà cung cấp";
+        }
+        if ("TRAINING".equals(code)) {
+            return "Xuất đào tạo";
+        }
+        if ("OTHER".equals(code)) {
+            return "Xuất khác";
+        }
+
+        String description = option.getDescription();
+        if (description != null && !description.isBlank()) {
+            return description;
+        }
+        return code == null ? "" : code;
+    }
+
+    private static class ExportTypeComboRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(
+                JList<?> list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus
+        ) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(
+                    list,
+                    value,
+                    index,
+                    isSelected,
+                    cellHasFocus
+            );
+
+            if (value instanceof OptionDto option) {
+                label.setText(exportTypeDisplayText(option));
+            }
+
+            label.setFont(UiTheme.regular(14));
+            label.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 28));
+            label.setForeground(TEXT);
+            label.setBackground(isSelected && index >= 0 ? Color.decode("#F8DCC6") : WHITE);
+            return label;
+        }
+    }
     private static class OutlinedInputPanel extends JPanel {
         OutlinedInputPanel() {
             setOpaque(false);

@@ -1,7 +1,7 @@
 package com.coffeechain.repository;
 
-import com.coffeechain.dto.PermissionResponse;
-import com.coffeechain.dto.RoleResponse;
+import com.coffeechain.dto.response.PermissionResponse;
+import com.coffeechain.dto.response.RoleResponse;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 

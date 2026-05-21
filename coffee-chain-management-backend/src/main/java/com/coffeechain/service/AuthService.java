@@ -1,8 +1,8 @@
 package com.coffeechain.service;
 
-import com.coffeechain.dto.LoginRequest;
-import com.coffeechain.dto.LoginResponse;
-import com.coffeechain.dto.UserInfoResponse;
+import com.coffeechain.dto.request.LoginRequest;
+import com.coffeechain.dto.response.LoginResponse;
+import com.coffeechain.dto.response.UserInfoResponse;
 import com.coffeechain.exception.AppException;
 import com.coffeechain.repository.NguoiDungRecord;
 import com.coffeechain.repository.NguoiDungRepository;

@@ -695,6 +695,71 @@ public class InventoryApiClient extends ApiClientSupport {
         }
     }
 
+    public InventoryTransferLookupDto getTransferLookups() throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(ApiConfig.INVENTORY_TRANSFER_LOOKUPS_URL))
+                .header("Authorization", bearerToken())
+                .GET()
+                .build();
+
+        HttpResponse<String> response = send(request);
+        BaseResponse<InventoryTransferLookupDto> baseResponse = readBaseResponse(
+                response,
+                new TypeReference<BaseResponse<InventoryTransferLookupDto>>() {}
+        );
+        return extractData(baseResponse);
+    }
+
+    public List<InventoryStockDto> getTransferStock(Long maKhoNguon) throws IOException, InterruptedException {
+        String url = ApiConfig.INVENTORY_TRANSFER_STOCK_URL + "?maKhoNguon=" + maKhoNguon;
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", bearerToken())
+                .GET()
+                .build();
+
+        HttpResponse<String> response = send(request);
+        BaseResponse<List<InventoryStockDto>> baseResponse = readBaseResponse(
+                response,
+                new TypeReference<BaseResponse<List<InventoryStockDto>>>() {}
+        );
+        return extractData(baseResponse);
+    }
+
+    public List<InventoryLotDto> getTransferLots(Long maKhoNguon, Long maNguyenLieu) throws IOException, InterruptedException {
+        String url = ApiConfig.INVENTORY_TRANSFER_LOTS_URL
+                + "?maKhoNguon=" + maKhoNguon
+                + "&maNguyenLieu=" + maNguyenLieu;
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", bearerToken())
+                .GET()
+                .build();
+
+        HttpResponse<String> response = send(request);
+        BaseResponse<List<InventoryLotDto>> baseResponse = readBaseResponse(
+                response,
+                new TypeReference<BaseResponse<List<InventoryLotDto>>>() {}
+        );
+        return extractData(baseResponse);
+    }
+
+    public TransferReceiptDto createTransferReceipt(CreateTransferReceiptRequest requestBody) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(ApiConfig.INVENTORY_TRANSFERS_URL))
+                .header("Authorization", bearerToken())
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(toJson(requestBody), StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> response = send(request);
+        BaseResponse<TransferReceiptDto> baseResponse = readBaseResponse(
+                response,
+                new TypeReference<BaseResponse<TransferReceiptDto>>() {}
+        );
+        return extractData(baseResponse);
+    }
+
     public InventoryExportLookupDto getExportLookups() throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(ApiConfig.INVENTORY_EXPORT_LOOKUPS_URL))
@@ -705,7 +770,8 @@ public class InventoryApiClient extends ApiClientSupport {
         HttpResponse<String> response = send(request);
         BaseResponse<InventoryExportLookupDto> baseResponse = readBaseResponse(
                 response,
-                new TypeReference<BaseResponse<InventoryExportLookupDto>>() {}
+                new TypeReference<>() {
+                }
         );
         return extractData(baseResponse);
     }
@@ -791,6 +857,191 @@ public class InventoryApiClient extends ApiClientSupport {
         }
     }
 
+    public static class InventoryTransferLookupDto {
+        private List<OptionDto> sourceWarehouses = new ArrayList<>();
+        private List<OptionDto> destinationWarehouses = new ArrayList<>();
+
+        public List<OptionDto> getSourceWarehouses() {
+            return sourceWarehouses;
+        }
+
+        public void setSourceWarehouses(List<OptionDto> sourceWarehouses) {
+            this.sourceWarehouses = sourceWarehouses;
+        }
+
+        public List<OptionDto> getDestinationWarehouses() {
+            return destinationWarehouses;
+        }
+
+        public void setDestinationWarehouses(List<OptionDto> destinationWarehouses) {
+            this.destinationWarehouses = destinationWarehouses;
+        }
+    }
+
+    public static class CreateTransferReceiptRequest {
+        private Long maKhoNguon;
+        private Long maKhoDich;
+        private boolean chonLoThuCong;
+        private String ghiChu;
+        private List<CreateTransferReceiptItemRequest> items = new ArrayList<>();
+
+        public Long getMaKhoNguon() {
+            return maKhoNguon;
+        }
+
+        public void setMaKhoNguon(Long maKhoNguon) {
+            this.maKhoNguon = maKhoNguon;
+        }
+
+        public Long getMaKhoDich() {
+            return maKhoDich;
+        }
+
+        public void setMaKhoDich(Long maKhoDich) {
+            this.maKhoDich = maKhoDich;
+        }
+
+        public boolean isChonLoThuCong() {
+            return chonLoThuCong;
+        }
+
+        public void setChonLoThuCong(boolean chonLoThuCong) {
+            this.chonLoThuCong = chonLoThuCong;
+        }
+
+        public String getGhiChu() {
+            return ghiChu;
+        }
+
+        public void setGhiChu(String ghiChu) {
+            this.ghiChu = ghiChu;
+        }
+
+        public List<CreateTransferReceiptItemRequest> getItems() {
+            return items;
+        }
+
+        public void setItems(List<CreateTransferReceiptItemRequest> items) {
+            this.items = items;
+        }
+    }
+
+    public static class CreateTransferReceiptItemRequest {
+        private Long maNguyenLieu;
+        private BigDecimal soLuongDieuChuyen;
+        private List<TransferLotSelectionRequest> loHangDieuChuyen = new ArrayList<>();
+
+        public Long getMaNguyenLieu() {
+            return maNguyenLieu;
+        }
+
+        public void setMaNguyenLieu(Long maNguyenLieu) {
+            this.maNguyenLieu = maNguyenLieu;
+        }
+
+        public BigDecimal getSoLuongDieuChuyen() {
+            return soLuongDieuChuyen;
+        }
+
+        public void setSoLuongDieuChuyen(BigDecimal soLuongDieuChuyen) {
+            this.soLuongDieuChuyen = soLuongDieuChuyen;
+        }
+
+        public List<TransferLotSelectionRequest> getLoHangDieuChuyen() {
+            return loHangDieuChuyen;
+        }
+
+        public void setLoHangDieuChuyen(List<TransferLotSelectionRequest> loHangDieuChuyen) {
+            this.loHangDieuChuyen = loHangDieuChuyen;
+        }
+    }
+
+    public static class TransferLotSelectionRequest {
+        private Long maLoHang;
+        private BigDecimal soLuongDieuChuyen;
+
+        public TransferLotSelectionRequest() {
+        }
+
+        public TransferLotSelectionRequest(Long maLoHang, BigDecimal soLuongDieuChuyen) {
+            this.maLoHang = maLoHang;
+            this.soLuongDieuChuyen = soLuongDieuChuyen;
+        }
+
+        public Long getMaLoHang() {
+            return maLoHang;
+        }
+
+        public void setMaLoHang(Long maLoHang) {
+            this.maLoHang = maLoHang;
+        }
+
+        public BigDecimal getSoLuongDieuChuyen() {
+            return soLuongDieuChuyen;
+        }
+
+        public void setSoLuongDieuChuyen(BigDecimal soLuongDieuChuyen) {
+            this.soLuongDieuChuyen = soLuongDieuChuyen;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TransferReceiptDto {
+        private Long maPhieuDieuChuyen;
+        private String tenKhoNguon;
+        private String tenKhoDich;
+        private String trangThai;
+        private int soDongChiTiet;
+        private LocalDateTime ngayDieuChuyen;
+
+        public Long getMaPhieuDieuChuyen() {
+            return maPhieuDieuChuyen;
+        }
+
+        public void setMaPhieuDieuChuyen(Long maPhieuDieuChuyen) {
+            this.maPhieuDieuChuyen = maPhieuDieuChuyen;
+        }
+
+        public String getTenKhoNguon() {
+            return tenKhoNguon;
+        }
+
+        public void setTenKhoNguon(String tenKhoNguon) {
+            this.tenKhoNguon = tenKhoNguon;
+        }
+
+        public String getTenKhoDich() {
+            return tenKhoDich;
+        }
+
+        public void setTenKhoDich(String tenKhoDich) {
+            this.tenKhoDich = tenKhoDich;
+        }
+
+        public String getTrangThai() {
+            return trangThai;
+        }
+
+        public void setTrangThai(String trangThai) {
+            this.trangThai = trangThai;
+        }
+
+        public int getSoDongChiTiet() {
+            return soDongChiTiet;
+        }
+
+        public void setSoDongChiTiet(int soDongChiTiet) {
+            this.soDongChiTiet = soDongChiTiet;
+        }
+
+        public LocalDateTime getNgayDieuChuyen() {
+            return ngayDieuChuyen;
+        }
+
+        public void setNgayDieuChuyen(LocalDateTime ngayDieuChuyen) {
+            this.ngayDieuChuyen = ngayDieuChuyen;
+        }
+    }
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class InventoryLotDto {
 

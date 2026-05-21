@@ -1,6 +1,8 @@
 package com.coffeechain.repository;
 
-import com.coffeechain.dto.*;
+import com.coffeechain.dto.request.CreateExportReceiptItemRequest;
+import com.coffeechain.dto.request.CreateImportReceiptItemRequest;
+import com.coffeechain.dto.response.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -24,6 +26,8 @@ public class InventoryRepository {
     private final SimpleJdbcInsert importDetailInsert;
     private final SimpleJdbcInsert exportReceiptInsert;
     private final SimpleJdbcInsert exportDetailInsert;
+    private final SimpleJdbcInsert transferReceiptInsert;
+    private final SimpleJdbcInsert transferDetailInsert;
     private final SimpleJdbcInsert lotInsert;
 
     public InventoryRepository(JdbcTemplate jdbcTemplate) {
@@ -44,6 +48,21 @@ public class InventoryRepository {
                 .withTableName("CHITIETPHIEUXUAT")
                 .usingColumns("MA_PHIEU_XUAT", "MA_NGUYEN_LIEU", "MA_LO_HANG", "SO_LUONG_XUAT", "DON_GIA_XUAT")
                 .usingGeneratedKeyColumns("MA_CT_PHIEU_XUAT");
+        this.transferReceiptInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("PHIEUDIEUCHUYEN")
+                .usingColumns("MA_KHO_NGUON", "MA_KHO_DICH", "NGUOI_TAO", "TRANG_THAI", "GHI_CHU")
+                .usingGeneratedKeyColumns("MA_PHIEU_DIEU_CHUYEN");
+
+        this.transferDetailInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("CHITIETPHIEUDIEUCHUYEN")
+                .usingColumns(
+                        "MA_PHIEU_DIEU_CHUYEN",
+                        "MA_NGUYEN_LIEU",
+                        "MA_LO_HANG_NGUON",
+                        "MA_LO_HANG_DICH",
+                        "SO_LUONG_DIEU_CHUYEN"
+                )
+                .usingGeneratedKeyColumns("MA_CT_PHIEU_DIEU_CHUYEN");
         this.lotInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("LOHANG_NGUYENLIEU")
                 .usingColumns("MA_KHO", "MA_NGUYEN_LIEU", "MA_CT_PHIEU_NHAP", "SO_LUONG_CON_LAI", "TRANG_THAI", "HAN_SU_DUNG")
@@ -240,6 +259,63 @@ public class InventoryRepository {
         params.put("SO_LUONG_XUAT", soLuongXuat);
         params.put("DON_GIA_XUAT", donGiaXuat);
         return exportDetailInsert.executeAndReturnKey(params).longValue();
+    }
+
+    public Long createTransferReceipt(
+            Long maKhoNguon,
+            Long maKhoDich,
+            Long nguoiTao,
+            String ghiChu
+    ) {
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("MA_KHO_NGUON", maKhoNguon);
+        params.put("MA_KHO_DICH", maKhoDich);
+        params.put("NGUOI_TAO", nguoiTao);
+        params.put("TRANG_THAI", "COMPLETED");
+        params.put("GHI_CHU", normalizeText(ghiChu));
+
+        return transferReceiptInsert.executeAndReturnKey(params).longValue();
+    }
+
+    public Long createTransferDetail(
+            Long maPhieuDieuChuyen,
+            Long maNguyenLieu,
+            Long maLoHangNguon,
+            Long maLoHangDich,
+            BigDecimal soLuongDieuChuyen
+    ) {
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("MA_PHIEU_DIEU_CHUYEN", maPhieuDieuChuyen);
+        params.put("MA_NGUYEN_LIEU", maNguyenLieu);
+        params.put("MA_LO_HANG_NGUON", maLoHangNguon);
+        params.put("MA_LO_HANG_DICH", maLoHangDich);
+        params.put("SO_LUONG_DIEU_CHUYEN", soLuongDieuChuyen);
+
+        return transferDetailInsert.executeAndReturnKey(params).longValue();
+    }
+
+    public TransferReceiptResponse findTransferReceipt(Long maPhieuDieuChuyen, int detailCount) {
+        return jdbcTemplate.queryForObject("""
+            SELECT
+                pdc.ma_phieu_dieu_chuyen,
+                pdc.ngay_tao AS ngay_dieu_chuyen,
+                pdc.trang_thai,
+                kn.ten_kho AS ten_kho_nguon,
+                kd.ten_kho AS ten_kho_dich
+            FROM PHIEUDIEUCHUYEN pdc
+            JOIN KHO kn ON kn.ma_kho = pdc.ma_kho_nguon
+            JOIN KHO kd ON kd.ma_kho = pdc.ma_kho_dich
+            WHERE pdc.ma_phieu_dieu_chuyen = ?
+            """, (rs, rowNum) -> {
+            TransferReceiptResponse response = new TransferReceiptResponse();
+            response.setMaPhieuDieuChuyen(rs.getLong("ma_phieu_dieu_chuyen"));
+            response.setNgayDieuChuyen(toLocalDateTime(rs.getTimestamp("ngay_dieu_chuyen")));
+            response.setTrangThai(rs.getString("trang_thai"));
+            response.setTenKhoNguon(rs.getString("ten_kho_nguon"));
+            response.setTenKhoDich(rs.getString("ten_kho_dich"));
+            response.setSoDongChiTiet(detailCount);
+            return response;
+        }, maPhieuDieuChuyen);
     }
 
     public Long createLot(Long maKho, Long maNguyenLieu, Long maCtPhieuNhap, BigDecimal soLuong, LocalDate hanSuDung) {

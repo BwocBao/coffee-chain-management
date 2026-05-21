@@ -1,6 +1,6 @@
 package com.coffeechain.repository;
 
-import com.coffeechain.dto.CreateUserLookupResponse;
+import com.coffeechain.dto.response.CreateUserLookupResponse;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 

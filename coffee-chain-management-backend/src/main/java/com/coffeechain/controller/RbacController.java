@@ -1,11 +1,11 @@
 package com.coffeechain.controller;
 
 import com.coffeechain.dto.BaseResponse;
-import com.coffeechain.dto.CreateRoleRequest;
-import com.coffeechain.dto.PermissionGroupResponse;
-import com.coffeechain.dto.RolePermissionResponse;
-import com.coffeechain.dto.RoleResponse;
-import com.coffeechain.dto.UpdateRolePermissionsRequest;
+import com.coffeechain.dto.request.CreateRoleRequest;
+import com.coffeechain.dto.response.PermissionGroupResponse;
+import com.coffeechain.dto.response.RolePermissionResponse;
+import com.coffeechain.dto.response.RoleResponse;
+import com.coffeechain.dto.request.UpdateRolePermissionsRequest;
 import com.coffeechain.security.AuthGuard;
 import com.coffeechain.service.RbacService;
 import io.swagger.v3.oas.annotations.Operation;

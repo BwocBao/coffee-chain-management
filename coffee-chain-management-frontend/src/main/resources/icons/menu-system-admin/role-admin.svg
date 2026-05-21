@@ -1,0 +1,12 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Admin</title>
+  <path d="M32 5L52 13V29C52 42.5 43.6 54.2 32 59C20.4 54.2 12 42.5 12 29V13L32 5Z" fill="#C67C4E"/>
+  <circle cx="32" cy="25" r="7" fill="white"/>
+  <path d="M20 44C21.8 36.5 26.2 33 32 33C37.8 33 42.2 36.5 44 44C44.4 45.7 43.1 47 41.4 47H22.6C20.9 47 19.6 45.7 20 44Z" fill="white"/>
+  <circle cx="48" cy="45" r="11" fill="#C67C4E" stroke="white" stroke-width="4"/>
+  <path d="M48 37V40" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <path d="M48 50V53" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <path d="M40 45H37" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <path d="M59 45H56" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="48" cy="45" r="4" fill="white"/>
+</svg>

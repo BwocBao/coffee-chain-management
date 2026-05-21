@@ -1,10 +1,10 @@
 package com.coffeechain.controller;
 
 import com.coffeechain.dto.BaseResponse;
-import com.coffeechain.dto.ForgotPasswordRequest;
-import com.coffeechain.dto.ForgotPasswordResponse;
-import com.coffeechain.dto.ResetPasswordRequest;
-import com.coffeechain.dto.VerifyResetCodeRequest;
+import com.coffeechain.dto.request.ForgotPasswordRequest;
+import com.coffeechain.dto.response.ForgotPasswordResponse;
+import com.coffeechain.dto.request.ResetPasswordRequest;
+import com.coffeechain.dto.request.VerifyResetCodeRequest;
 import com.coffeechain.service.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

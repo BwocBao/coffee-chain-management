@@ -7,9 +7,11 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -19,6 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -28,6 +32,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.imageio.ImageIO;
 
 import com.coffeechain.service.RbacApiClient;
 import com.coffeechain.service.SessionManager;
@@ -37,8 +42,8 @@ import com.coffeechain.ui.common.RoundedButton;
 import com.coffeechain.ui.common.UiTheme;
 
 /**
- * Màn phân quyền và bảo mật.
- * Màn này mở từ QuanTriHeThongFrame, cho phép xem role, xem nhóm permission và cập nhật quyền cho role.
+ * Màn phân quyền và bảo mật. Màn này mở từ QuanTriHeThongFrame, cho phép xem
+ * role, xem nhóm permission và cập nhật quyền cho role.
  */
 public class PhanQuyenBaoMatFrame extends JFrame {
 
@@ -61,7 +66,11 @@ public class PhanQuyenBaoMatFrame extends JFrame {
     private static final int GROUP_COLS = 2;
 
     private static final String ICON_BACK = "icons/phan-quyen-bao-mat/left.svg";
-    private static final String ICON_ROLE = "icons/phan-quyen-bao-mat/phan-quyen.svg";
+    private static final String ICON_ROLE_FALLBACK = "icons/phan-quyen-bao-mat/phan-quyen.svg";
+    private static final String ICON_ROLE_ADMIN = "icons/menu-system-admin/role-admin.svg";
+    private static final String ICON_ROLE_WAREHOUSE_MANAGER = "icons/menu-system-admin/role-quan-ly-kho.svg";
+    private static final String ICON_ROLE_BRANCH_MANAGER = "icons/menu-system-admin/role-quan-ly-chi-nhanh.svg";
+    private static final String ICON_ROLE_CASHIER = "icons/menu-system-admin/role-thu-ngan.svg";
     private static final String ICON_AVATAR = "icons/phan-quyen-bao-mat/avatar.svg";
 
     private final JPanel contentPanel = new JPanel(null);
@@ -492,13 +501,104 @@ public class PhanQuyenBaoMatFrame extends JFrame {
         };
     }
 
+    private static Icon roleIcon(String role) {
+        String iconPath = switch (role == null ? "" : role) {
+            case "ADMIN" ->
+                ICON_ROLE_ADMIN;
+            case "QUAN_LY_KHO" ->
+                ICON_ROLE_WAREHOUSE_MANAGER;
+            case "QUAN_LY_CHI_NHANH" ->
+                ICON_ROLE_BRANCH_MANAGER;
+            case "THU_NGAN" ->
+                ICON_ROLE_CASHIER;
+            default ->
+                null;
+        };
+
+        Icon icon = loadRoleIcon(iconPath, 34, 34);
+        return icon == null ? IconLoader.svg(ICON_ROLE_FALLBACK, 28, 28) : icon;
+    }
+
+    private static Icon loadRoleIcon(String path, int width, int height) {
+        if (path == null || path.isBlank()) {
+            return null;
+        }
+        if (path.toLowerCase().endsWith(".svg")) {
+            return IconLoader.svg(path, width, height);
+        }
+        return pngIcon(path, width, height);
+    }
+    private static Icon pngIcon(String path, int width, int height) {
+        if (path == null || path.isBlank()) {
+            return null;
+        }
+        try {
+            java.net.URL url = PhanQuyenBaoMatFrame.class.getClassLoader().getResource(path);
+            if (url == null) {
+                return null;
+            }
+
+            BufferedImage source = ImageIO.read(url);
+            if (source == null) {
+                return null;
+            }
+
+            int minX = source.getWidth();
+            int minY = source.getHeight();
+            int maxX = -1;
+            int maxY = -1;
+
+            for (int y = 0; y < source.getHeight(); y++) {
+                for (int x = 0; x < source.getWidth(); x++) {
+                    int argb = source.getRGB(x, y);
+                    if (!isBakedCheckerBackground(argb)) {
+                        minX = Math.min(minX, x);
+                        minY = Math.min(minY, y);
+                        maxX = Math.max(maxX, x);
+                        maxY = Math.max(maxY, y);
+                    }
+                }
+            }
+
+            if (maxX < minX || maxY < minY) {
+                return null;
+            }
+
+            BufferedImage cleaned = new BufferedImage(maxX - minX + 1, maxY - minY + 1, BufferedImage.TYPE_INT_ARGB);
+            for (int y = minY; y <= maxY; y++) {
+                for (int x = minX; x <= maxX; x++) {
+                    int argb = source.getRGB(x, y);
+                    cleaned.setRGB(x - minX, y - minY, isBakedCheckerBackground(argb) ? 0x00000000 : argb);
+                }
+            }
+
+            BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = scaled.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.drawImage(cleaned, 0, 0, width, height, null);
+            g.dispose();
+            return new ImageIcon(scaled);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private static boolean isBakedCheckerBackground(int argb) {
+        int alpha = (argb >>> 24) & 0xFF;
+        int red = (argb >>> 16) & 0xFF;
+        int green = (argb >>> 8) & 0xFF;
+        int blue = argb & 0xFF;
+        return alpha == 0 || (red >= 232 && green >= 232 && blue >= 232 && Math.abs(red - green) <= 6 && Math.abs(green - blue) <= 6);
+    }
     private class RoleCard extends JPanel {
 
         private final RbacApiClient.RoleDto role;
         private boolean hover;
         private boolean selected;
 
-        private final JLabel iconLabel = new JLabel(IconLoader.svg(ICON_ROLE, 28, 28));
+        private final JLabel iconLabel = new JLabel();
         private final JLabel titleLabel = new JLabel();
         private final JLabel descLabel = new JLabel();
 
@@ -509,6 +609,7 @@ public class PhanQuyenBaoMatFrame extends JFrame {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            iconLabel.setIcon(roleIcon(role.getTenVaiTro()));
             add(iconLabel);
 
             titleLabel.setText(roleDisplayName(role.getTenVaiTro()));

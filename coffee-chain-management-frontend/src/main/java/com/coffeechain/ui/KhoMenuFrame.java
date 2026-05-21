@@ -8,6 +8,7 @@ import com.coffeechain.ui.common.UserCircle;
 import com.coffeechain.ui.common.icons.BellIcon;
 
 import javax.swing.Icon;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -15,7 +16,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.JFrame;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -28,7 +28,8 @@ import java.util.List;
 
 /**
  * Menu chức năng kho.
- * Hiển thị các nghiệp vụ kho theo quyền như nhập, xuất, điều chuyển, kiểm kho, hao hụt và tra cứu tồn.
+ * Hiển thị các nghiệp vụ kho theo quyền như nhập, xuất, điều chuyển, kiểm kho,
+ * hao hụt và tra cứu tồn.
  */
 public class KhoMenuFrame extends JFrame {
     private static final int CANVAS_W = 1120;
@@ -92,7 +93,10 @@ public class KhoMenuFrame extends JFrame {
         backLabel.setFont(UiTheme.regular(18));
         backLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         backLabel.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) { goBack(); }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                goBack();
+            }
         });
         contentPanel.add(backLabel);
 
@@ -180,7 +184,7 @@ public class KhoMenuFrame extends JFrame {
                 new KhoMenuItem("Xem tồn kho", "Xem tồn hiện tại theo kho/nguyên liệu", "INVENTORY:VIEW", "icons/menu-kho/xem-ton-kho.svg"),
                 new KhoMenuItem("Theo dõi HSD", "Theo dõi lô, HSD và cảnh báo", "INVENTORY:VIEW", "icons/menu-kho/theo-doi-hsd.svg"),
                 new KhoMenuItem("Lịch sử", "Tra cứu nhập xuất điều chuyển", "INVENTORY:VIEW", "icons/menu-kho/tra-cuu-lich-su.svg"),
-                new KhoMenuItem("Quản lý kho", "Thêm, sửa, xóa thông tin kho", "WAREHOUSE:VIEW", "icons/menu-kho/quan-ly-kho.svg"),
+                new KhoMenuItem("Quản lý thông tin kho", "Thêm, sửa, xóa thông tin kho", "WAREHOUSE:VIEW", "icons/menu-kho/quan-ly-kho.svg"),
                 new KhoMenuItem("Quản lý nguyên liệu", "Thêm, sửa, xóa nguyên liệu", "INGREDIENT:VIEW", "icons/menu-kho/quan-ly-nguyen-lieu.svg"),
                 new KhoMenuItem("Quản lý nhà cung cấp", "Thêm, sửa, ngưng hoạt động NCC", "SUPPLIER:VIEW", "icons/menu-kho/quan-ly-nha-cung-cap.svg"),
                 new KhoMenuItem("Quản lý đơn vị tính", "Gram, ml, cái, chai, gói ...", "UNIT:VIEW", "icons/menu-kho/quan-ly-don-vi-tinh.svg")
@@ -214,8 +218,57 @@ public class KhoMenuFrame extends JFrame {
             return;
         }
 
+        if ("icons/menu-kho/dieu-chuyen-kho.svg".equals(item.iconPath())) {
+            new DieuChuyenKhoFrame().setVisible(true);
+            dispose();
+            return;
+        }
+
+        if ("icons/menu-kho/kiem-kho.svg".equals(item.iconPath())) {
+            new KiemKhoFrame().setVisible(true);
+            dispose();
+            return;
+        }
+
+        if ("icons/menu-kho/bao-cao-hao-hut.svg".equals(item.iconPath())) {
+            new BaoCaoHaoHutFrame().setVisible(true);
+            dispose();
+            return;
+        }
         if ("icons/menu-kho/xem-ton-kho.svg".equals(item.iconPath())) {
             new XemTonKhoFrame().setVisible(true);
+            dispose();
+            return;
+        }
+        if ("icons/menu-kho/theo-doi-hsd.svg".equals(item.iconPath())) {
+            new TheoDoiHanSuDungFrame().setVisible(true);
+            dispose();
+            return;
+        }
+        if ("icons/menu-kho/tra-cuu-lich-su.svg".equals(item.iconPath())) {
+            new TraCuuLichSuKhoFrame().setVisible(true);
+            dispose();
+            return;
+        }
+
+        if ("icons/menu-kho/quan-ly-nguyen-lieu.svg".equals(item.iconPath())) {
+            new QuanLyNguyenLieuFrame().setVisible(true);
+            dispose();
+            return;
+        }
+        if ("icons/menu-kho/quan-ly-kho.svg".equals(item.iconPath())) {
+            new QuanLyKhoFrame().setVisible(true);
+            dispose();
+            return;
+        }
+
+        if ("icons/menu-kho/quan-ly-don-vi-tinh.svg".equals(item.iconPath())) {
+            new QuanLyDonViTinhFrame().setVisible(true);
+            dispose();
+            return;
+        }
+        if ("icons/menu-kho/quan-ly-nha-cung-cap.svg".equals(item.iconPath())) {
+            new QuanLyNhaCungCapFrame().setVisible(true);
             dispose();
             return;
         }

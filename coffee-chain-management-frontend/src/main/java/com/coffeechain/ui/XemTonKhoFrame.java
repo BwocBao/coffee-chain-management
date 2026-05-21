@@ -1,31 +1,8 @@
 package com.coffeechain.ui;
 
-import com.coffeechain.service.InventoryApiClient;
-import com.coffeechain.service.InventoryApiClient.BatchInventoryDto;
-import com.coffeechain.service.InventoryApiClient.InventoryDto;
-import com.coffeechain.service.InventoryApiClient.PageResponseDto;
-import com.coffeechain.service.InventoryApiClient.StockSummaryDto;
-import com.coffeechain.ui.common.IconLoader;
-import com.coffeechain.ui.common.RoundedButton;
-import com.coffeechain.ui.common.UiTheme;
-
-import javax.swing.BorderFactory;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -37,11 +14,42 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
+import javax.swing.plaf.basic.BasicComboBoxUI;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+
+import com.coffeechain.service.InventoryApiClient;
+import com.coffeechain.service.InventoryApiClient.BatchInventoryDto;
+import com.coffeechain.service.InventoryApiClient.InventoryDto;
+import com.coffeechain.service.InventoryApiClient.PageResponseDto;
+import com.coffeechain.service.InventoryApiClient.StockSummaryDto;
+import com.coffeechain.ui.common.IconLoader;
+import com.coffeechain.ui.common.RoundedButton;
+import com.coffeechain.ui.common.UiTheme;
+
 /**
- * Man hinh xem ton kho hien tai va ton theo lo.
- * Du lieu lay tu cac API /api/inventory/stock cua backend.
+ * Man hinh xem ton kho hien tai va ton theo lo. Du lieu lay tu cac API
+ * /api/inventory/stock cua backend.
  */
 public class XemTonKhoFrame extends JFrame {
+
     private static final int ROOT_W = 1360;
     private static final int ROOT_H = 780;
 
@@ -183,22 +191,19 @@ public class XemTonKhoFrame extends JFrame {
 
         addLabel(card, "Kho", 340, 14, 120, 20);
         styleCombo(warehouseCombo);
-        warehouseCombo.setBounds(340, 40, 260, 34);
-        card.add(warehouseCombo);
+        addCombo(card, warehouseCombo, 340, 40, 260, 34);
 
         addLabel(card, "Nguyên liệu", 626, 14, 120, 20);
         styleCombo(ingredientCombo);
-        ingredientCombo.setBounds(626, 40, 260, 34);
-        card.add(ingredientCombo);
+        addCombo(card, ingredientCombo, 626, 40, 260, 34);
 
         addLabel(card, "Trạng thái", 912, 14, 120, 20);
         styleCombo(statusCombo);
-        statusCombo.setBounds(912, 40, 170, 34);
         statusCombo.addItem(new FilterOption(null, "Tất cả"));
         statusCombo.addItem(new FilterOption("ON_DINH", "Ổn định"));
         statusCombo.addItem(new FilterOption("TON_THAP", "Tồn thấp"));
         statusCombo.addItem(new FilterOption("HET_HANG", "Hết hàng"));
-        card.add(statusCombo);
+        addCombo(card, statusCombo, 912, 40, 170, 34);
 
         RoundedButton filterButton = primaryButton("Lọc");
         filterButton.setBounds(1106, 40, 70, 34);
@@ -369,15 +374,15 @@ public class XemTonKhoFrame extends JFrame {
         stockTableModel.setRowCount(0);
         for (InventoryDto item : rows) {
             stockTableModel.addRow(new Object[]{
-                    item.getTenKho(),
-                    item.getTenNguyenLieu(),
-                    valueOrDash(item.getKyHieu()),
-                    formatNumber(item.getSoLuongTon()),
-                    formatNumber(item.getMucTonToiThieu()),
-                    stockStatusLabel(item.getTrangThaiTonKho()),
-                    formatDateTime(item.getLanCapNhatCuoi()),
-                    item.getMaKho(),
-                    item.getMaNguyenLieu()
+                item.getTenKho(),
+                item.getTenNguyenLieu(),
+                valueOrDash(item.getKyHieu()),
+                formatNumber(item.getSoLuongTon()),
+                formatNumber(item.getMucTonToiThieu()),
+                stockStatusLabel(item.getTrangThaiTonKho()),
+                formatDateTime(item.getLanCapNhatCuoi()),
+                item.getMaKho(),
+                item.getMaNguyenLieu()
             });
         }
     }
@@ -386,14 +391,14 @@ public class XemTonKhoFrame extends JFrame {
         lotTableModel.setRowCount(0);
         for (BatchInventoryDto item : rows) {
             lotTableModel.addRow(new Object[]{
-                    item.getMaLoHang(),
-                    item.getTenKho(),
-                    item.getTenNguyenLieu(),
-                    valueOrDash(item.getKyHieu()),
-                    formatNumber(item.getSoLuongConLai()),
-                    valueOrDash(item.getTrangThai()),
-                    valueOrDash(item.getHanSuDung()),
-                    formatDateTime(item.getNgayTao())
+                item.getMaLoHang(),
+                item.getTenKho(),
+                item.getTenNguyenLieu(),
+                valueOrDash(item.getKyHieu()),
+                formatNumber(item.getSoLuongConLai()),
+                valueOrDash(item.getTrangThai()),
+                valueOrDash(item.getHanSuDung()),
+                formatDateTime(item.getNgayTao())
             });
         }
     }
@@ -519,11 +524,23 @@ public class XemTonKhoFrame extends JFrame {
     }
 
     private void styleCombo(JComboBox<FilterOption> combo) {
+        combo.setUI(new DesignComboBoxUI());
+        combo.setRenderer(new DesignComboBoxRenderer());
         combo.setFont(UiTheme.regular(13));
         combo.setForeground(TEXT);
         combo.setBackground(FIELD_FILL);
-        combo.setBorder(BorderFactory.createLineBorder(BORDER));
+        combo.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
+        combo.setOpaque(false);
         combo.setFocusable(false);
+        combo.setMaximumRowCount(8);
+    }
+
+    private void addCombo(JPanel parent, JComboBox<FilterOption> combo, int x, int y, int w, int h) {
+        OutlinedInputPanel panel = new OutlinedInputPanel();
+        panel.setLayout(new java.awt.BorderLayout());
+        panel.setBounds(x, y, w, h);
+        panel.add(combo, java.awt.BorderLayout.CENTER);
+        parent.add(panel);
     }
 
     private void addLabel(JPanel parent, String text, int x, int y, int w, int h) {
@@ -630,6 +647,7 @@ public class XemTonKhoFrame extends JFrame {
     }
 
     private record FilterOption(String id, String label) {
+
         @Override
         public String toString() {
             return label;
@@ -640,10 +658,12 @@ public class XemTonKhoFrame extends JFrame {
             PageResponseDto<InventoryDto> stock,
             StockSummaryDto summary,
             List<BatchInventoryDto> lots
-    ) {
+            ) {
+
     }
 
     private static class RoundedCard extends JPanel {
+
         private final int radius;
         private final Color fill;
 
@@ -661,6 +681,89 @@ public class XemTonKhoFrame extends JFrame {
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
             g2.dispose();
             super.paintComponent(g);
+        }
+    }
+
+    private static class DesignComboBoxUI extends BasicComboBoxUI {
+
+        @Override
+        public void installUI(JComponent c) {
+            super.installUI(c);
+            c.setOpaque(false);
+        }
+
+        @Override
+        protected JButton createArrowButton() {
+            JButton button = new JButton() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                    g2.setColor(TEXT);
+                    int cx = getWidth() / 2;
+                    int cy = getHeight() / 2 + 1;
+                    g2.drawLine(cx - 5, cy - 3, cx, cy + 2);
+                    g2.drawLine(cx, cy + 2, cx + 5, cy - 3);
+                    g2.dispose();
+                }
+            };
+            button.setBorder(BorderFactory.createEmptyBorder());
+            button.setContentAreaFilled(false);
+            button.setFocusPainted(false);
+            button.setOpaque(false);
+            button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            return button;
+        }
+
+        @Override
+        public void paintCurrentValueBackground(Graphics g, java.awt.Rectangle bounds, boolean hasFocus) {
+            // Custom background handled by parent panel
+        }
+    }
+
+    private static class DesignComboBoxRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof FilterOption option) {
+                label.setText(option.label());
+            }
+            label.setFont(UiTheme.regular(13));
+            label.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 28));
+            label.setForeground(TEXT);
+            label.setBackground(isSelected && index >= 0 ? Color.decode("#F8DCC6") : FIELD_FILL);
+            label.setPreferredSize(new Dimension(0, 28));
+            return label;
+        }
+    }
+
+    private static class OutlinedInputPanel extends JPanel {
+
+        OutlinedInputPanel() {
+            setOpaque(false);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(FIELD_FILL);
+            g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+
+        @Override
+        protected void paintChildren(Graphics g) {
+            super.paintChildren(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(BORDER);
+            g2.setStroke(new BasicStroke(1.2f));
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+            g2.dispose();
         }
     }
 }

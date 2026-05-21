@@ -89,7 +89,7 @@ public class MenuTongFrame extends JFrame {
                     "Quản lý POS",
                     "Quản lý các đơn hàng và\ncông thức món",
                     ICON_POS,
-                    () -> javax.swing.JOptionPane.showMessageDialog(this, "Sau này mở PosMenuFrame")
+                    () -> FrameNavigator.open(this, new QuanLyPOSFrame())
             ));
         }
 
@@ -107,7 +107,7 @@ public class MenuTongFrame extends JFrame {
                     "Quản lý chi nhánh",
                     "Theo dõi hoạt động,\nnhân sự, doanh thu\ntừng chi nhánh",
                     ICON_BRANCH,
-                    () -> javax.swing.JOptionPane.showMessageDialog(this, "Sau này mở QuanLyChiNhanhFrame")
+                    () -> FrameNavigator.open(this, new QuanLyChiNhanhFrame())
             ));
         }
 

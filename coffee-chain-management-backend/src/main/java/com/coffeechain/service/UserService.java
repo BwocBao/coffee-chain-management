@@ -1,8 +1,8 @@
 package com.coffeechain.service;
 
-import com.coffeechain.dto.CreateUserLookupResponse;
-import com.coffeechain.dto.CreateUserRequest;
-import com.coffeechain.dto.CreateUserResponse;
+import com.coffeechain.dto.response.CreateUserLookupResponse;
+import com.coffeechain.dto.request.CreateUserRequest;
+import com.coffeechain.dto.response.CreateUserResponse;
 import com.coffeechain.exception.AppException;
 import com.coffeechain.repository.NguoiDungRepository;
 import com.coffeechain.security.PasswordUtil;

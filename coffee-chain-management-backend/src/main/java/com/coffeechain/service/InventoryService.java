@@ -1,6 +1,8 @@
 package com.coffeechain.service;
 
 import com.coffeechain.dto.*;
+import com.coffeechain.dto.request.*;
+import com.coffeechain.dto.response.*;
 import com.coffeechain.exception.AppException;
 import com.coffeechain.repository.InventoryRepository;
 import com.coffeechain.repository.InventoryRepository.LotRecord;
@@ -41,10 +43,10 @@ public class InventoryService {
         response.setWarehouses(inventoryRepository.findWarehouses());
         response.setIngredients(inventoryRepository.findIngredients());
         response.setExportTypes(List.of(
-                new InventoryOptionResponse(1L, "INTERNAL_USE", "Xuat dung noi bo"),
-                new InventoryOptionResponse(2L, "RETURN_SUPPLIER", "Tra nha cung cap"),
-                new InventoryOptionResponse(3L, "TRAINING", "Xuat dao tao"),
-                new InventoryOptionResponse(4L, "OTHER", "Xuat khac")
+                new InventoryOptionResponse(1L, "INTERNAL_USE", "Xuất dùng nội bộ"),
+                new InventoryOptionResponse(2L, "RETURN_SUPPLIER", "Xuất trả nhà cung cấp"),
+                new InventoryOptionResponse(3L, "TRAINING", "Xuất để training"),
+                new InventoryOptionResponse(4L, "OTHER", "Xuất khác")
         ));
         return response;
     }
@@ -272,6 +274,343 @@ public class InventoryService {
         }
 
         return inventoryRepository.findStockSummary(maKho, branchScope);
+    }
+
+    public InventoryTransferLookupResponse getTransferLookup() {
+        InventoryTransferLookupResponse response = new InventoryTransferLookupResponse();
+
+        response.setSourceWarehouses(inventoryRepository.findWarehouses());
+        response.setDestinationWarehouses(inventoryRepository.findWarehouses());
+
+        return response;
+    }
+
+    public List<InventoryLotResponse> getLotsForTransfer(Long maKhoNguon, Long maNguyenLieu, SessionUser user) {
+        if (maKhoNguon == null) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Vui long chon kho nguon");
+        }
+        if (maNguyenLieu == null) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Vui long chon nguyen lieu");
+        }
+
+        WarehouseRecord warehouse = inventoryRepository.findWarehouse(maKhoNguon);
+        if (warehouse == null) {
+            throw new AppException(HttpStatus.NOT_FOUND, "Khong tim thay kho nguon");
+        }
+
+        validateWarehouseAccess(warehouse, user);
+
+        if (!inventoryRepository.ingredientExists(maNguyenLieu)) {
+            throw new AppException(HttpStatus.NOT_FOUND, "Khong tim thay nguyen lieu: " + maNguyenLieu);
+        }
+
+        return inventoryRepository.findLotResponsesForExport(maKhoNguon, maNguyenLieu);
+    }
+
+    public List<InventoryStockOptionResponse> getTransferStock(Long maKhoNguon, SessionUser user) {
+        if (maKhoNguon == null) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Vui long chon kho nguon");
+        }
+
+        WarehouseRecord warehouse = inventoryRepository.findWarehouse(maKhoNguon);
+        if (warehouse == null) {
+            throw new AppException(HttpStatus.NOT_FOUND, "Khong tim thay kho nguon");
+        }
+
+        validateWarehouseAccess(warehouse, user);
+
+        return inventoryRepository.findIngredientsWithStockForExport(maKhoNguon);
+    }
+
+    @Transactional
+    public TransferReceiptResponse createTransferReceipt(CreateTransferReceiptRequest request, SessionUser user) {
+        validateTransferRequest(request);
+
+        WarehouseRecord sourceWarehouse = inventoryRepository.findWarehouse(request.getMaKhoNguon());
+        if (sourceWarehouse == null) {
+            throw new AppException(HttpStatus.NOT_FOUND, "Khong tim thay kho nguon");
+        }
+
+        WarehouseRecord destinationWarehouse = inventoryRepository.findWarehouse(request.getMaKhoDich());
+        if (destinationWarehouse == null) {
+            throw new AppException(HttpStatus.NOT_FOUND, "Khong tim thay kho dich");
+        }
+
+        validateWarehouseAccess(sourceWarehouse, user);
+        validateWarehouseAccess(destinationWarehouse, user);
+
+        Long receiptId = inventoryRepository.createTransferReceipt(
+                request.getMaKhoNguon(),
+                request.getMaKhoDich(),
+                user.getMaNguoiDung(),
+                request.getGhiChu()
+        );
+
+        boolean manualMode = Boolean.TRUE.equals(request.getChonLoThuCong());
+        int detailCount = 0;
+
+        for (CreateTransferReceiptItemRequest item : request.getItems()) {
+            if (!inventoryRepository.ingredientExists(item.getMaNguyenLieu())) {
+                throw new AppException(HttpStatus.NOT_FOUND, "Khong tim thay nguyen lieu: " + item.getMaNguyenLieu());
+            }
+
+            BigDecimal sourceStockBeforeItem = inventoryRepository.findCurrentStock(
+                    request.getMaKhoNguon(),
+                    item.getMaNguyenLieu()
+            );
+
+            if (sourceStockBeforeItem.compareTo(item.getSoLuongDieuChuyen()) < 0) {
+                throw new AppException(
+                        HttpStatus.BAD_REQUEST,
+                        "Ton kho nguon khong du cho nguyen lieu: " + item.getMaNguyenLieu()
+                );
+            }
+
+            List<TransferAllocation> allocations = manualMode
+                    ? buildManualTransferAllocations(request.getMaKhoNguon(), item)
+                    : buildFefoTransferAllocations(request.getMaKhoNguon(), item);
+
+            for (TransferAllocation allocation : allocations) {
+                BigDecimal sourceStockBefore = inventoryRepository.findCurrentStock(
+                        request.getMaKhoNguon(),
+                        item.getMaNguyenLieu()
+                );
+
+                BigDecimal destinationStockBefore = inventoryRepository.findCurrentStock(
+                        request.getMaKhoDich(),
+                        item.getMaNguyenLieu()
+                );
+
+                boolean lotUpdated = inventoryRepository.decreaseLot(
+                        allocation.maLoHangNguon(),
+                        allocation.quantity()
+                );
+
+                if (!lotUpdated) {
+                    throw new AppException(
+                            HttpStatus.BAD_REQUEST,
+                            "Lo hang nguon khong du so luong: " + allocation.maLoHangNguon()
+                    );
+                }
+
+                boolean sourceStockUpdated = inventoryRepository.decreaseStock(
+                        request.getMaKhoNguon(),
+                        item.getMaNguyenLieu(),
+                        allocation.quantity()
+                );
+
+                if (!sourceStockUpdated) {
+                    throw new AppException(
+                            HttpStatus.BAD_REQUEST,
+                            "Ton kho nguon khong du cho nguyen lieu: " + item.getMaNguyenLieu()
+                    );
+                }
+
+                Long destinationLotId = inventoryRepository.createLot(
+                        request.getMaKhoDich(),
+                        item.getMaNguyenLieu(),
+                        null,
+                        allocation.quantity(),
+                        allocation.hanSuDung()
+                );
+
+                inventoryRepository.increaseStock(
+                        request.getMaKhoDich(),
+                        item.getMaNguyenLieu(),
+                        allocation.quantity()
+                );
+
+                inventoryRepository.createTransferDetail(
+                        receiptId,
+                        item.getMaNguyenLieu(),
+                        allocation.maLoHangNguon(),
+                        destinationLotId,
+                        allocation.quantity()
+                );
+
+                BigDecimal sourceStockAfter = sourceStockBefore.subtract(allocation.quantity());
+                BigDecimal destinationStockAfter = destinationStockBefore.add(allocation.quantity());
+
+                inventoryRepository.createInventoryJournal(
+                        request.getMaKhoNguon(),
+                        item.getMaNguyenLieu(),
+                        allocation.maLoHangNguon(),
+                        "TRANSFER_OUT",
+                        "PHIEUDIEUCHUYEN",
+                        receiptId,
+                        allocation.quantity().negate(),
+                        sourceStockBefore,
+                        sourceStockAfter,
+                        user.getMaNguoiDung()
+                );
+
+                inventoryRepository.createInventoryJournal(
+                        request.getMaKhoDich(),
+                        item.getMaNguyenLieu(),
+                        destinationLotId,
+                        "TRANSFER_IN",
+                        "PHIEUDIEUCHUYEN",
+                        receiptId,
+                        allocation.quantity(),
+                        destinationStockBefore,
+                        destinationStockAfter,
+                        user.getMaNguoiDung()
+                );
+
+                detailCount++;
+            }
+        }
+
+        return inventoryRepository.findTransferReceipt(receiptId, detailCount);
+    }
+
+    private void validateTransferRequest(CreateTransferReceiptRequest request) {
+        if (request == null) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Thieu du lieu phieu dieu chuyen");
+        }
+
+        if (request.getMaKhoNguon() == null) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Vui long chon kho nguon");
+        }
+
+        if (request.getMaKhoDich() == null) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Vui long chon kho dich");
+        }
+
+        if (request.getMaKhoNguon().equals(request.getMaKhoDich())) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Kho nguon va kho dich khong duoc trung nhau");
+        }
+
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Vui long them it nhat mot dong nguyen lieu");
+        }
+
+        boolean manualMode = Boolean.TRUE.equals(request.getChonLoThuCong());
+
+        for (CreateTransferReceiptItemRequest item : request.getItems()) {
+            validateTransferItem(item, manualMode);
+        }
+    }
+
+    private void validateTransferItem(CreateTransferReceiptItemRequest item, boolean manualMode) {
+        if (item == null || item.getMaNguyenLieu() == null) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Vui long chon nguyen lieu");
+        }
+
+        if (item.getSoLuongDieuChuyen() == null || item.getSoLuongDieuChuyen().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "So luong dieu chuyen phai lon hon 0");
+        }
+
+        if (manualMode && (item.getLoHangDieuChuyen() == null || item.getLoHangDieuChuyen().isEmpty())) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Vui long chon lo hang khi bat che do chon lo thu cong");
+        }
+    }
+
+    private List<TransferAllocation> buildFefoTransferAllocations(
+            Long maKhoNguon,
+            CreateTransferReceiptItemRequest item
+    ) {
+        List<LotRecord> lots = inventoryRepository.lockLotsForExport(
+                maKhoNguon,
+                item.getMaNguyenLieu()
+        );
+
+        List<TransferAllocation> allocations = new ArrayList<>();
+        BigDecimal remaining = item.getSoLuongDieuChuyen();
+
+        for (LotRecord lot : lots) {
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+                break;
+            }
+
+            BigDecimal available = lot.soLuongConLai();
+            if (available == null || available.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+
+            BigDecimal take = available.min(remaining);
+            allocations.add(new TransferAllocation(
+                    lot.maLoHang(),
+                    take,
+                    lot.hanSuDung()
+            ));
+
+            remaining = remaining.subtract(take);
+        }
+
+        if (remaining.compareTo(BigDecimal.ZERO) > 0) {
+            throw new AppException(
+                    HttpStatus.BAD_REQUEST,
+                    "Lo hang khong du so luong dieu chuyen cho nguyen lieu: " + item.getMaNguyenLieu()
+            );
+        }
+
+        return allocations;
+    }
+
+    private List<TransferAllocation> buildManualTransferAllocations(
+            Long maKhoNguon,
+            CreateTransferReceiptItemRequest item
+    ) {
+        Map<Long, BigDecimal> quantitiesByLot = new LinkedHashMap<>();
+
+        for (TransferLotSelectionRequest lotSelection : item.getLoHangDieuChuyen()) {
+            if (lotSelection == null || lotSelection.getMaLoHang() == null) {
+                throw new AppException(HttpStatus.BAD_REQUEST, "Vui long chon lo hang hop le");
+            }
+
+            if (lotSelection.getSoLuongDieuChuyen() == null
+                    || lotSelection.getSoLuongDieuChuyen().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new AppException(HttpStatus.BAD_REQUEST, "So luong dieu chuyen theo lo phai lon hon 0");
+            }
+
+            quantitiesByLot.merge(
+                    lotSelection.getMaLoHang(),
+                    lotSelection.getSoLuongDieuChuyen(),
+                    BigDecimal::add
+            );
+        }
+
+        BigDecimal selectedTotal = quantitiesByLot.values()
+                .stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (selectedTotal.compareTo(item.getSoLuongDieuChuyen()) != 0) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Tong so luong theo lo phai bang so luong dieu chuyen");
+        }
+
+        List<TransferAllocation> allocations = new ArrayList<>();
+
+        for (Map.Entry<Long, BigDecimal> entry : quantitiesByLot.entrySet()) {
+            LotRecord lot = inventoryRepository.lockLotForExport(
+                    entry.getKey(),
+                    maKhoNguon,
+                    item.getMaNguyenLieu()
+            );
+
+            if (lot == null) {
+                throw new AppException(HttpStatus.NOT_FOUND, "Khong tim thay lo hang hop le: " + entry.getKey());
+            }
+
+            if (lot.soLuongConLai().compareTo(entry.getValue()) < 0) {
+                throw new AppException(HttpStatus.BAD_REQUEST, "Lo hang khong du so luong: " + entry.getKey());
+            }
+
+            allocations.add(new TransferAllocation(
+                    entry.getKey(),
+                    entry.getValue(),
+                    lot.hanSuDung()
+            ));
+        }
+
+        return allocations;
+    }
+
+    private record TransferAllocation(
+            Long maLoHangNguon,
+            BigDecimal quantity,
+            java.time.LocalDate hanSuDung
+    ) {
     }
 
     private void validateRequest(CreateImportReceiptRequest request) {

@@ -1,12 +1,3 @@
--- ============================================================================
--- SEED_FULL_ONCE_CLEAN.SQL
--- Chay 1 lan de nap toan bo seed: RBAC + chi nhanh + master data kho + giao dich kho Power BI.
--- File nay chi gom du lieu seed, khong tao bang.
--- Khong can chay rieng seed_rbac_chinhanh_8.sql hay pbi_extra_seed_v2.sql.
--- Truoc file nay can chay schema: quan_ly_chuoi_cafe_phung_loc.sql.
--- Nen chay bang Run Script/F5 trong SQL Developer hoac @seed_full_once.sql trong SQLcl/SQL*Plus.
--- ============================================================================
-
 SET DEFINE OFF;
 
 -- ============================================================================
@@ -67,6 +58,8 @@ WHEN NOT MATCHED THEN INSERT (ten_chuc_nang) VALUES (s.ten_chuc_nang);
 MERGE INTO CHUCNANG t USING (SELECT 'REPORT' ten_chuc_nang FROM dual) s ON (t.ten_chuc_nang = s.ten_chuc_nang)
 WHEN NOT MATCHED THEN INSERT (ten_chuc_nang) VALUES (s.ten_chuc_nang);
 MERGE INTO CHUCNANG t USING (SELECT 'UNIT' ten_chuc_nang FROM dual) s ON (t.ten_chuc_nang = s.ten_chuc_nang)
+WHEN NOT MATCHED THEN INSERT (ten_chuc_nang) VALUES (s.ten_chuc_nang);
+MERGE INTO CHUCNANG t USING (SELECT 'WAREHOUSE' ten_chuc_nang FROM dual) s ON (t.ten_chuc_nang = s.ten_chuc_nang)
 WHEN NOT MATCHED THEN INSERT (ten_chuc_nang) VALUES (s.ten_chuc_nang);
 
 -------------------------------------------------------------------------------
@@ -132,6 +125,10 @@ MERGE INTO QUYEN q USING (SELECT module, action, name FROM (
     SELECT 'SUPPLIER', 'CREATE', 'Tạo nhà cung cấp' FROM dual UNION ALL
     SELECT 'SUPPLIER', 'UPDATE', 'Sửa nhà cung cấp' FROM dual UNION ALL
     SELECT 'SUPPLIER', 'DELETE', 'Xóa nhà cung cấp' FROM dual UNION ALL
+    SELECT 'WAREHOUSE', 'VIEW', 'Xem kho' FROM dual UNION ALL
+    SELECT 'WAREHOUSE', 'CREATE', 'Tạo kho' FROM dual UNION ALL
+    SELECT 'WAREHOUSE', 'UPDATE', 'Sửa kho' FROM dual UNION ALL
+    SELECT 'WAREHOUSE', 'DELETE', 'Ngưng hoạt động kho' FROM dual UNION ALL
     SELECT 'INVENTORY', 'VIEW', 'Xem tồn kho' FROM dual UNION ALL
     SELECT 'INVENTORY', 'IMPORT', 'Nhập kho' FROM dual UNION ALL
     SELECT 'INVENTORY', 'EXPORT', 'Xuất kho' FROM dual UNION ALL
@@ -191,6 +188,7 @@ WHERE vt.ten_vai_tro = 'QUAN_LY_KHO'
       OR (cn.ten_chuc_nang = 'REPORT' AND q.hanh_dong IN ('VIEW'))
       OR (cn.ten_chuc_nang = 'BRANCH' AND q.hanh_dong IN ('VIEW'))
       OR (cn.ten_chuc_nang = 'UNIT' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE'))
+      OR (cn.ten_chuc_nang = 'WAREHOUSE' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE','DELETE'))
   )
   AND NOT EXISTS (
       SELECT 1 FROM VAITRO_QUYEN x
@@ -415,13 +413,13 @@ WHEN NOT MATCHED THEN INSERT (ten_don_vi_tinh, ky_hieu) VALUES (s.ten, s.ky_hieu
 MERGE INTO DONVITINH t USING (SELECT 'Mililit' ten, 'ml' ky_hieu FROM dual) s ON (t.ky_hieu = s.ky_hieu)
 WHEN MATCHED THEN UPDATE SET t.ten_don_vi_tinh = s.ten
 WHEN NOT MATCHED THEN INSERT (ten_don_vi_tinh, ky_hieu) VALUES (s.ten, s.ky_hieu);
-MERGE INTO DONVITINH t USING (SELECT 'Cai' ten, 'cai' ky_hieu FROM dual) s ON (t.ky_hieu = s.ky_hieu)
+MERGE INTO DONVITINH t USING (SELECT 'Cái' ten, 'cai' ky_hieu FROM dual) s ON (t.ky_hieu = s.ky_hieu)
 WHEN MATCHED THEN UPDATE SET t.ten_don_vi_tinh = s.ten
 WHEN NOT MATCHED THEN INSERT (ten_don_vi_tinh, ky_hieu) VALUES (s.ten, s.ky_hieu);
 MERGE INTO DONVITINH t USING (SELECT 'Chai' ten, 'chai' ky_hieu FROM dual) s ON (t.ky_hieu = s.ky_hieu)
 WHEN MATCHED THEN UPDATE SET t.ten_don_vi_tinh = s.ten
 WHEN NOT MATCHED THEN INSERT (ten_don_vi_tinh, ky_hieu) VALUES (s.ten, s.ky_hieu);
-MERGE INTO DONVITINH t USING (SELECT 'Goi' ten, 'goi' ky_hieu FROM dual) s ON (t.ky_hieu = s.ky_hieu)
+MERGE INTO DONVITINH t USING (SELECT 'Gói' ten, 'goi' ky_hieu FROM dual) s ON (t.ky_hieu = s.ky_hieu)
 WHEN MATCHED THEN UPDATE SET t.ten_don_vi_tinh = s.ten
 WHEN NOT MATCHED THEN INSERT (ten_don_vi_tinh, ky_hieu) VALUES (s.ten, s.ky_hieu);
 
@@ -429,7 +427,7 @@ WHEN NOT MATCHED THEN INSERT (ten_don_vi_tinh, ky_hieu) VALUES (s.ten, s.ky_hieu
 MERGE INTO DONVITINH t USING (SELECT 'Kilogram' ten, 'kg' ky_hieu FROM dual) s ON (t.ky_hieu = s.ky_hieu)
 WHEN MATCHED THEN UPDATE SET t.ten_don_vi_tinh = s.ten
 WHEN NOT MATCHED THEN INSERT (ten_don_vi_tinh, ky_hieu) VALUES (s.ten, s.ky_hieu);
-MERGE INTO DONVITINH t USING (SELECT 'Thung' ten, 'thung' ky_hieu FROM dual) s ON (t.ky_hieu = s.ky_hieu)
+MERGE INTO DONVITINH t USING (SELECT 'Thùng' ten, 'thung' ky_hieu FROM dual) s ON (t.ky_hieu = s.ky_hieu)
 WHEN MATCHED THEN UPDATE SET t.ten_don_vi_tinh = s.ten
 WHEN NOT MATCHED THEN INSERT (ten_don_vi_tinh, ky_hieu) VALUES (s.ten, s.ky_hieu);
 
@@ -3125,10 +3123,6 @@ END;
 -- SELECT COUNT(*) FROM NHATKY_KHO WHERE thoi_gian BETWEEN TIMESTAMP '2026-05-12 00:00:00' AND TIMESTAMP '2026-06-10 23:59:59';
 -- SELECT k.ten_kho, nl.ten_nguyen_lieu, tk.so_luong_ton FROM TONKHO tk JOIN KHO k ON k.ma_kho = tk.ma_kho JOIN NGUYENLIEU nl ON nl.ma_nguyen_lieu = tk.ma_nguyen_lieu ORDER BY k.ten_kho, nl.ten_nguyen_lieu;
 
--- --------------------------------------------------------------------------
--- Don helper functions de database khong bi them object phu sau khi seed xong.
--- Neu muon giu lai de debug thi co the comment cac dong DROP nay.
--- --------------------------------------------------------------------------
 DROP FUNCTION pbi_get_user_id;
 DROP FUNCTION pbi_get_supplier_id;
 DROP FUNCTION pbi_get_unit_id;

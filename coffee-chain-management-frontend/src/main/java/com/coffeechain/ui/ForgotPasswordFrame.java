@@ -29,22 +29,22 @@ import java.awt.GridBagLayout;
 public class ForgotPasswordFrame extends JFrame {
     private static final int CARD_W = 620;
     private static final int CARD_H = 590;
-    private static final String SEND_CODE_TEXT = "Gui ma";
-    private static final String VERIFY_CODE_TEXT = "Xac nhan ma";
-    private static final String RESET_PASSWORD_TEXT = "Doi mat khau";
+    private static final String SEND_CODE_TEXT = "Gửi mã";
+    private static final String VERIFY_CODE_TEXT = "Xác nhận mã";
+    private static final String RESET_PASSWORD_TEXT = "Đổi mật khẩu";
     private static final Color PAGE_BG = Color.decode("#FDF0D5");
     private static final Color ICON_GRAY = Color.decode("#D9D9D9");
     private static final Color ERROR = Color.decode("#BE3C2D");
     private static final Color SUCCESS = Color.decode("#3C8C5A");
 
     private final PromptTextField emailField = new PromptTextField("  Email");
-    private final PromptTextField codeField = new PromptTextField("  Ma xac nhan");
-    private final PromptPasswordField newPasswordField = new PromptPasswordField("  Mat khau moi");
-    private final PromptPasswordField confirmPasswordField = new PromptPasswordField("  Nhap lai mat khau moi");
+    private final PromptTextField codeField = new PromptTextField("  Mã xác nhận");
+    private final PromptPasswordField newPasswordField = new PromptPasswordField("  Mật khẩu mới");
+    private final PromptPasswordField confirmPasswordField = new PromptPasswordField("  Nhập lại mật khẩu mới");
     private final RoundedButton sendCodeButton = new RoundedButton(SEND_CODE_TEXT);
     private final RoundedButton verifyCodeButton = new RoundedButton(VERIFY_CODE_TEXT);
     private final RoundedButton resetPasswordButton = new RoundedButton(RESET_PASSWORD_TEXT);
-    private final RoundedButton closeButton = new RoundedButton("Quay lai");
+    private final RoundedButton closeButton = new RoundedButton("Quay lại");
     private final JLabel messageLabel = new JLabel(" ");
     private final JLabel hintLabel = new JLabel(" ");
 
@@ -53,7 +53,7 @@ public class ForgotPasswordFrame extends JFrame {
     private boolean busy = false;
 
     public ForgotPasswordFrame(JFrame parent) {
-        setTitle("Phung Loc - Quen mat khau");
+        setTitle("Phụng Lộc - Quên mật khẩu");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(820, 720);
         setMinimumSize(new Dimension(760, 680));
@@ -72,13 +72,13 @@ public class ForgotPasswordFrame extends JFrame {
     }
 
     private void buildCard(JPanel card) {
-        JLabel title = new JLabel("<html>Forgot Password<br/>Phung Loc Coffee</html>");
+        JLabel title = new JLabel("<html>Forgot Password<br/>Phụng Lộc Coffee</html>");
         title.setForeground(UiTheme.TEXT_DARK);
         title.setFont(UiTheme.bold(26));
         title.setBounds(54, 42, 430, 72);
         card.add(title);
 
-        JLabel subtitle = new JLabel("Nhap email de nhan ma xac nhan dat lai mat khau");
+        JLabel subtitle = new JLabel("Nhập email để nhận mã xác nhận đặt lại mật khẩu");
         subtitle.setForeground(UiTheme.TEXT_SOFT);
         subtitle.setFont(UiTheme.regular(14));
         subtitle.setBounds(54, 122, 430, 26);

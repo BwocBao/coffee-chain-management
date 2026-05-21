@@ -1,6 +1,9 @@
 package com.coffeechain.controller;
 
 import com.coffeechain.dto.*;
+import com.coffeechain.dto.request.CreateExportReceiptRequest;
+import com.coffeechain.dto.request.CreateImportReceiptRequest;
+import com.coffeechain.dto.response.*;
 import com.coffeechain.security.AuthGuard;
 import com.coffeechain.security.SessionUser;
 import com.coffeechain.service.InventoryService;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.coffeechain.dto.request.CreateTransferReceiptRequest;
 
 import java.util.List;
 
@@ -323,6 +327,84 @@ public class InventoryController {
         return ResponseEntity.ok(BaseResponse.ok(
                 "Lay tong quan ton kho thanh cong",
                 inventoryService.getStockSummary(maKho, user)
+        ));
+    }
+
+    @Operation(
+            summary = "Lay du lieu combobox cho man hinh dieu chuyen kho",
+            description = "Tra ve danh sach kho nguon va kho dich de frontend render form dieu chuyen kho."
+    )
+    @GetMapping("/transfers/lookups")
+    public ResponseEntity<BaseResponse<InventoryTransferLookupResponse>> transferLookups(
+            @Parameter(hidden = true)
+            @RequestHeader(value = "Authorization", required = false) String authHeader
+    ) {
+        authGuard.requirePermission(authHeader, "INVENTORY:TRANSFER");
+
+        return ResponseEntity.ok(BaseResponse.ok(
+                "Lay du lieu dieu chuyen kho thanh cong",
+                inventoryService.getTransferLookup()
+        ));
+    }
+
+    @Operation(
+            summary = "Lay danh sach nguyen lieu con ton de dieu chuyen",
+            description = "Dung cho bang danh sach nguyen lieu theo kho nguon."
+    )
+    @GetMapping("/transfers/stock")
+    public ResponseEntity<BaseResponse<List<InventoryStockOptionResponse>>> transferStock(
+            @Parameter(hidden = true)
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestParam Long maKhoNguon
+    ) {
+        SessionUser user = authGuard.requirePermission(authHeader, "INVENTORY:TRANSFER");
+
+        return ResponseEntity.ok(BaseResponse.ok(
+                "Lay ton kho nguon thanh cong",
+                inventoryService.getTransferStock(maKhoNguon, user)
+        ));
+    }
+
+    @Operation(
+            summary = "Lay danh sach lo con ton de dieu chuyen kho",
+            description = "Dung cho che do chon lo thu cong. Danh sach sap xep theo FEFO."
+    )
+    @GetMapping("/transfers/lots")
+    public ResponseEntity<BaseResponse<List<InventoryLotResponse>>> transferLots(
+            @Parameter(hidden = true)
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestParam Long maKhoNguon,
+            @RequestParam Long maNguyenLieu
+    ) {
+        SessionUser user = authGuard.requirePermission(authHeader, "INVENTORY:TRANSFER");
+
+        return ResponseEntity.ok(BaseResponse.ok(
+                "Lay danh sach lo dieu chuyen thanh cong",
+                inventoryService.getLotsForTransfer(maKhoNguon, maNguyenLieu, user)
+        ));
+    }
+
+    @Operation(
+            summary = "Tao phieu dieu chuyen kho",
+            description = """
+                Tao phieu dieu chuyen trong PHIEUDIEUCHUYEN, luu chi tiet vao CHITIETPHIEUDIEUCHUYEN,
+                tru lo hang va TONKHO kho nguon, tao lo hang va cong TONKHO kho dich.
+                Ghi NHATKY_KHO voi TRANSFER_OUT cho kho nguon va TRANSFER_IN cho kho dich.
+                Mac dinh backend tu chon lo theo FEFO. Khi chonLoThuCong = true,
+                frontend gui danh sach loHangDieuChuyen cho tung dong nguyen lieu.
+                """
+    )
+    @PostMapping("/transfers")
+    public ResponseEntity<BaseResponse<TransferReceiptResponse>> createTransferReceipt(
+            @Parameter(hidden = true)
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestBody CreateTransferReceiptRequest request
+    ) {
+        SessionUser user = authGuard.requirePermission(authHeader, "INVENTORY:TRANSFER");
+
+        return ResponseEntity.ok(BaseResponse.created(
+                "Tao phieu dieu chuyen kho thanh cong",
+                inventoryService.createTransferReceipt(request, user)
         ));
     }
 }

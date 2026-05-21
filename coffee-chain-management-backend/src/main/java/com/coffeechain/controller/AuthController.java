@@ -1,10 +1,10 @@
 package com.coffeechain.controller;
 
 import com.coffeechain.dto.BaseResponse;
-import com.coffeechain.dto.LoginRequest;
-import com.coffeechain.dto.LoginResponse;
-import com.coffeechain.dto.PermissionCheckResponse;
-import com.coffeechain.dto.UserInfoResponse;
+import com.coffeechain.dto.request.LoginRequest;
+import com.coffeechain.dto.response.LoginResponse;
+import com.coffeechain.dto.response.PermissionCheckResponse;
+import com.coffeechain.dto.response.UserInfoResponse;
 import com.coffeechain.security.AuthGuard;
 import com.coffeechain.security.SessionUser;
 import com.coffeechain.security.TokenStore;
