@@ -61,7 +61,29 @@ MERGE INTO CHUCNANG t USING (SELECT 'UNIT' ten_chuc_nang FROM dual) s ON (t.ten_
 WHEN NOT MATCHED THEN INSERT (ten_chuc_nang) VALUES (s.ten_chuc_nang);
 MERGE INTO CHUCNANG t USING (SELECT 'WAREHOUSE' ten_chuc_nang FROM dual) s ON (t.ten_chuc_nang = s.ten_chuc_nang)
 WHEN NOT MATCHED THEN INSERT (ten_chuc_nang) VALUES (s.ten_chuc_nang);
+MERGE INTO CHUCNANG t USING (SELECT 'RECIPE' ten_chuc_nang FROM dual) s ON (t.ten_chuc_nang = s.ten_chuc_nang)
+WHEN NOT MATCHED THEN INSERT (ten_chuc_nang) VALUES (s.ten_chuc_nang);
 
+-------------------------------------------------------------------------------
+-- 2.1. Cap nhat constraint hanh_dong de cho phep STOCKTAKE:MANAGE
+-------------------------------------------------------------------------------
+BEGIN
+    EXECUTE IMMEDIATE 'ALTER TABLE QUYEN DROP CONSTRAINT CK_QUYEN_HANH_DONG';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2443 THEN
+            RAISE;
+        END IF;
+END;
+/
+
+ALTER TABLE QUYEN ADD CONSTRAINT CK_QUYEN_HANH_DONG CHECK (
+    hanh_dong IN (
+        'VIEW', 'CREATE', 'UPDATE', 'DELETE',
+        'IMPORT', 'EXPORT', 'TRANSFER', 'ADJUST',
+        'PAY', 'CANCEL', 'REFUND', 'MANAGE'
+    )
+);
 -------------------------------------------------------------------------------
 -- 3. Quyen
 -------------------------------------------------------------------------------
@@ -117,6 +139,8 @@ MERGE INTO QUYEN q USING (SELECT module, action, name FROM (
     SELECT 'PRODUCT', 'CREATE', 'Tạo sản phẩm' FROM dual UNION ALL
     SELECT 'PRODUCT', 'UPDATE', 'Sửa sản phẩm' FROM dual UNION ALL
     SELECT 'PRODUCT', 'DELETE', 'Xóa sản phẩm' FROM dual UNION ALL
+    SELECT 'RECIPE', 'VIEW', 'Xem công thức' FROM dual UNION ALL
+    SELECT 'RECIPE', 'MANAGE', 'Quản lý công thức' FROM dual UNION ALL
     SELECT 'INGREDIENT', 'VIEW', 'Xem nguyên liệu' FROM dual UNION ALL
     SELECT 'INGREDIENT', 'CREATE', 'Tạo nguyên liệu' FROM dual UNION ALL
     SELECT 'INGREDIENT', 'UPDATE', 'Sửa nguyên liệu' FROM dual UNION ALL
@@ -135,9 +159,7 @@ MERGE INTO QUYEN q USING (SELECT module, action, name FROM (
     SELECT 'INVENTORY', 'TRANSFER', 'Điều chuyển kho' FROM dual UNION ALL
     SELECT 'INVENTORY', 'ADJUST', 'Điều chỉnh tồn kho' FROM dual UNION ALL
     SELECT 'STOCKTAKE', 'VIEW', 'Xem kiểm kho' FROM dual UNION ALL
-    SELECT 'STOCKTAKE', 'CREATE', 'Tạo phiếu kiểm kho' FROM dual UNION ALL
-    SELECT 'STOCKTAKE', 'UPDATE', 'Sửa phiếu kiểm kho' FROM dual UNION ALL
-    SELECT 'STOCKTAKE', 'ADJUST', 'Duyệt điều chỉnh kiểm kho' FROM dual UNION ALL
+    SELECT 'STOCKTAKE', 'MANAGE', 'Quản lý phiếu kiểm kho' FROM dual UNION ALL
     SELECT 'WASTAGE', 'VIEW', 'Xem hao hụt' FROM dual UNION ALL
     SELECT 'WASTAGE', 'CREATE', 'Báo hao hụt' FROM dual UNION ALL
     SELECT 'WASTAGE', 'UPDATE', 'Sửa hao hụt' FROM dual UNION ALL
@@ -179,7 +201,7 @@ JOIN CHUCNANG cn ON cn.ma_chuc_nang = q.ma_chuc_nang
 WHERE vt.ten_vai_tro = 'QUAN_LY_KHO'
   AND (
       (cn.ten_chuc_nang = 'INVENTORY' AND q.hanh_dong IN ('VIEW','IMPORT','EXPORT','TRANSFER','ADJUST'))
-      OR (cn.ten_chuc_nang = 'STOCKTAKE' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE','ADJUST'))
+      OR (cn.ten_chuc_nang = 'STOCKTAKE' AND q.hanh_dong IN ('VIEW','MANAGE'))
       OR (cn.ten_chuc_nang = 'WASTAGE' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE'))
       OR (cn.ten_chuc_nang = 'SUPPLIER' AND q.hanh_dong IN ('VIEW'))
       OR (cn.ten_chuc_nang = 'INGREDIENT' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE'))
@@ -206,13 +228,14 @@ WHERE vt.ten_vai_tro = 'QUAN_LY_CHI_NHANH'
       (cn.ten_chuc_nang = 'USER' AND q.hanh_dong IN ('VIEW','CREATE'))
       OR (cn.ten_chuc_nang = 'BRANCH' AND q.hanh_dong IN ('VIEW'))
       OR (cn.ten_chuc_nang = 'INVENTORY' AND q.hanh_dong IN ('VIEW'))
-      OR (cn.ten_chuc_nang = 'STOCKTAKE' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE','ADJUST'))
+      OR (cn.ten_chuc_nang = 'STOCKTAKE' AND q.hanh_dong IN ('VIEW','MANAGE'))
       OR (cn.ten_chuc_nang = 'WASTAGE' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE'))
       OR (cn.ten_chuc_nang = 'ORDER' AND q.hanh_dong IN ('VIEW','CREATE','CANCEL','REFUND'))
       OR (cn.ten_chuc_nang = 'INGREDIENT' AND q.hanh_dong IN ('VIEW'))
       OR (cn.ten_chuc_nang = 'PRODUCT' AND q.hanh_dong IN ('VIEW'))
       OR (cn.ten_chuc_nang = 'REPORT' AND q.hanh_dong IN ('VIEW'))
       OR (cn.ten_chuc_nang = 'UNIT' AND q.hanh_dong IN ('VIEW'))
+      OR (cn.ten_chuc_nang = 'RECIPE' AND q.hanh_dong IN ('VIEW'))
   )
   AND NOT EXISTS (
       SELECT 1 FROM VAITRO_QUYEN x
@@ -227,7 +250,7 @@ JOIN QUYEN q ON 1 = 1
 JOIN CHUCNANG cn ON cn.ma_chuc_nang = q.ma_chuc_nang
 WHERE vt.ten_vai_tro = 'THU_NGAN'
   AND (
-      (cn.ten_chuc_nang = 'ORDER' AND q.hanh_dong IN ('VIEW','CREATE','PAY'))
+      (cn.ten_chuc_nang = 'ORDER' AND q.hanh_dong IN ('VIEW','CREATE','PAY','CANCEL'))
       OR (cn.ten_chuc_nang = 'PRODUCT' AND q.hanh_dong IN ('VIEW'))
   )
   AND NOT EXISTS (
@@ -479,35 +502,160 @@ MERGE INTO NGUYENLIEU t USING (SELECT 'Ống hút giấy' ten, 'cai' dvt, 500 mi
 WHEN MATCHED THEN UPDATE SET t.ma_don_vi_tinh = (SELECT ma_don_vi_tinh FROM DONVITINH WHERE ky_hieu = s.dvt), t.muc_ton_toi_thieu = s.min_qty, t.trang_thai = 'ACTIVE'
 WHEN NOT MATCHED THEN INSERT (ten_nguyen_lieu, ma_don_vi_tinh, muc_ton_toi_thieu, trang_thai) VALUES (s.ten, (SELECT ma_don_vi_tinh FROM DONVITINH WHERE ky_hieu = s.dvt), s.min_qty, 'ACTIVE');
 
-MERGE INTO SANPHAM t USING (SELECT 'Cà phê sữa đá' ten, 35000 gia FROM dual) s ON (t.ten_san_pham = s.ten)
-WHEN MATCHED THEN UPDATE SET t.gia_ban_hien_tai = s.gia, t.trang_thai = 'AVAILABLE'
-WHEN NOT MATCHED THEN INSERT (ten_san_pham, gia_ban_hien_tai, trang_thai) VALUES (s.ten, s.gia, 'AVAILABLE');
-MERGE INTO SANPHAM t USING (SELECT 'Bạc xỉu' ten, 39000 gia FROM dual) s ON (t.ten_san_pham = s.ten)
-WHEN MATCHED THEN UPDATE SET t.gia_ban_hien_tai = s.gia, t.trang_thai = 'AVAILABLE'
-WHEN NOT MATCHED THEN INSERT (ten_san_pham, gia_ban_hien_tai, trang_thai) VALUES (s.ten, s.gia, 'AVAILABLE');
-MERGE INTO SANPHAM t USING (SELECT 'Latte đá' ten, 45000 gia FROM dual) s ON (t.ten_san_pham = s.ten)
-WHEN MATCHED THEN UPDATE SET t.gia_ban_hien_tai = s.gia, t.trang_thai = 'AVAILABLE'
-WHEN NOT MATCHED THEN INSERT (ten_san_pham, gia_ban_hien_tai, trang_thai) VALUES (s.ten, s.gia, 'AVAILABLE');
-MERGE INTO SANPHAM t USING (SELECT 'Trà sữa trân châu' ten, 42000 gia FROM dual) s ON (t.ten_san_pham = s.ten)
-WHEN MATCHED THEN UPDATE SET t.gia_ban_hien_tai = s.gia, t.trang_thai = 'AVAILABLE'
-WHEN NOT MATCHED THEN INSERT (ten_san_pham, gia_ban_hien_tai, trang_thai) VALUES (s.ten, s.gia, 'AVAILABLE');
+MERGE INTO SANPHAM t
+USING (
+    SELECT
+        'Cà phê sữa đá' ten,
+        35000 gia,
+        'https://placehold.co/600x400?text=Ca+phe+sua+da' hinh
+    FROM dual
+) s
+ON (t.ten_san_pham = s.ten)
+WHEN MATCHED THEN UPDATE SET
+    t.gia_ban_hien_tai = s.gia,
+    t.hinh_anh = s.hinh,
+    t.trang_thai = 'AVAILABLE'
+WHEN NOT MATCHED THEN INSERT
+    (ten_san_pham, gia_ban_hien_tai, hinh_anh, trang_thai)
+    VALUES (s.ten, s.gia, s.hinh, 'AVAILABLE');
+
+MERGE INTO SANPHAM t
+USING (
+    SELECT
+        'Bạc xỉu' ten,
+        39000 gia,
+        'https://placehold.co/600x400?text=Bac+xiu' hinh
+    FROM dual
+) s
+ON (t.ten_san_pham = s.ten)
+WHEN MATCHED THEN UPDATE SET
+    t.gia_ban_hien_tai = s.gia,
+    t.hinh_anh = s.hinh,
+    t.trang_thai = 'AVAILABLE'
+WHEN NOT MATCHED THEN INSERT
+    (ten_san_pham, gia_ban_hien_tai, hinh_anh, trang_thai)
+    VALUES (s.ten, s.gia, s.hinh, 'AVAILABLE');
+
+MERGE INTO SANPHAM t
+USING (
+    SELECT
+        'Latte đá' ten,
+        45000 gia,
+        'https://placehold.co/600x400?text=Latte+da' hinh
+    FROM dual
+) s
+ON (t.ten_san_pham = s.ten)
+WHEN MATCHED THEN UPDATE SET
+    t.gia_ban_hien_tai = s.gia,
+    t.hinh_anh = s.hinh,
+    t.trang_thai = 'AVAILABLE'
+WHEN NOT MATCHED THEN INSERT
+    (ten_san_pham, gia_ban_hien_tai, hinh_anh, trang_thai)
+    VALUES (s.ten, s.gia, s.hinh, 'AVAILABLE');
+
+MERGE INTO SANPHAM t
+USING (
+    SELECT
+        'Trà sữa trân châu' ten,
+        42000 gia,
+        'https://placehold.co/600x400?text=Tra+sua+tran+chau' hinh
+    FROM dual
+) s
+ON (t.ten_san_pham = s.ten)
+WHEN MATCHED THEN UPDATE SET
+    t.gia_ban_hien_tai = s.gia,
+    t.hinh_anh = s.hinh,
+    t.trang_thai = 'AVAILABLE'
+WHEN NOT MATCHED THEN INSERT
+    (ten_san_pham, gia_ban_hien_tai, hinh_anh, trang_thai)
+    VALUES (s.ten, s.gia, s.hinh, 'AVAILABLE');
 
 -- San pham bo sung cho bao cao Power BI
-MERGE INTO SANPHAM t USING (SELECT 'Americano đá' ten, 39000 gia FROM dual) s ON (t.ten_san_pham = s.ten)
-WHEN MATCHED THEN UPDATE SET t.gia_ban_hien_tai = s.gia, t.trang_thai = 'AVAILABLE'
-WHEN NOT MATCHED THEN INSERT (ten_san_pham, gia_ban_hien_tai, trang_thai) VALUES (s.ten, s.gia, 'AVAILABLE');
-MERGE INTO SANPHAM t USING (SELECT 'Cacao sữa đá' ten, 45000 gia FROM dual) s ON (t.ten_san_pham = s.ten)
-WHEN MATCHED THEN UPDATE SET t.gia_ban_hien_tai = s.gia, t.trang_thai = 'AVAILABLE'
-WHEN NOT MATCHED THEN INSERT (ten_san_pham, gia_ban_hien_tai, trang_thai) VALUES (s.ten, s.gia, 'AVAILABLE');
-MERGE INTO SANPHAM t USING (SELECT 'Caramel macchiato' ten, 59000 gia FROM dual) s ON (t.ten_san_pham = s.ten)
-WHEN MATCHED THEN UPDATE SET t.gia_ban_hien_tai = s.gia, t.trang_thai = 'AVAILABLE'
-WHEN NOT MATCHED THEN INSERT (ten_san_pham, gia_ban_hien_tai, trang_thai) VALUES (s.ten, s.gia, 'AVAILABLE');
-MERGE INTO SANPHAM t USING (SELECT 'Matcha latte' ten, 55000 gia FROM dual) s ON (t.ten_san_pham = s.ten)
-WHEN MATCHED THEN UPDATE SET t.gia_ban_hien_tai = s.gia, t.trang_thai = 'AVAILABLE'
-WHEN NOT MATCHED THEN INSERT (ten_san_pham, gia_ban_hien_tai, trang_thai) VALUES (s.ten, s.gia, 'AVAILABLE');
-MERGE INTO SANPHAM t USING (SELECT 'Trà đào' ten, 49000 gia FROM dual) s ON (t.ten_san_pham = s.ten)
-WHEN MATCHED THEN UPDATE SET t.gia_ban_hien_tai = s.gia, t.trang_thai = 'AVAILABLE'
-WHEN NOT MATCHED THEN INSERT (ten_san_pham, gia_ban_hien_tai, trang_thai) VALUES (s.ten, s.gia, 'AVAILABLE');
+
+MERGE INTO SANPHAM t
+USING (
+    SELECT
+        'Americano đá' ten,
+        39000 gia,
+        'https://placehold.co/600x400?text=Americano+da' hinh
+    FROM dual
+) s
+ON (t.ten_san_pham = s.ten)
+WHEN MATCHED THEN UPDATE SET
+    t.gia_ban_hien_tai = s.gia,
+    t.hinh_anh = s.hinh,
+    t.trang_thai = 'AVAILABLE'
+WHEN NOT MATCHED THEN INSERT
+    (ten_san_pham, gia_ban_hien_tai, hinh_anh, trang_thai)
+    VALUES (s.ten, s.gia, s.hinh, 'AVAILABLE');
+
+MERGE INTO SANPHAM t
+USING (
+    SELECT
+        'Cacao sữa đá' ten,
+        45000 gia,
+        'https://placehold.co/600x400?text=Cacao+sua+da' hinh
+    FROM dual
+) s
+ON (t.ten_san_pham = s.ten)
+WHEN MATCHED THEN UPDATE SET
+    t.gia_ban_hien_tai = s.gia,
+    t.hinh_anh = s.hinh,
+    t.trang_thai = 'AVAILABLE'
+WHEN NOT MATCHED THEN INSERT
+    (ten_san_pham, gia_ban_hien_tai, hinh_anh, trang_thai)
+    VALUES (s.ten, s.gia, s.hinh, 'AVAILABLE');
+
+MERGE INTO SANPHAM t
+USING (
+    SELECT
+        'Caramel macchiato' ten,
+        59000 gia,
+        'https://placehold.co/600x400?text=Caramel+macchiato' hinh
+    FROM dual
+) s
+ON (t.ten_san_pham = s.ten)
+WHEN MATCHED THEN UPDATE SET
+    t.gia_ban_hien_tai = s.gia,
+    t.hinh_anh = s.hinh,
+    t.trang_thai = 'AVAILABLE'
+WHEN NOT MATCHED THEN INSERT
+    (ten_san_pham, gia_ban_hien_tai, hinh_anh, trang_thai)
+    VALUES (s.ten, s.gia, s.hinh, 'AVAILABLE');
+
+MERGE INTO SANPHAM t
+USING (
+    SELECT
+        'Matcha latte' ten,
+        55000 gia,
+        'https://placehold.co/600x400?text=Matcha+latte' hinh
+    FROM dual
+) s
+ON (t.ten_san_pham = s.ten)
+WHEN MATCHED THEN UPDATE SET
+    t.gia_ban_hien_tai = s.gia,
+    t.hinh_anh = s.hinh,
+    t.trang_thai = 'AVAILABLE'
+WHEN NOT MATCHED THEN INSERT
+    (ten_san_pham, gia_ban_hien_tai, hinh_anh, trang_thai)
+    VALUES (s.ten, s.gia, s.hinh, 'AVAILABLE');
+
+MERGE INTO SANPHAM t
+USING (
+    SELECT
+        'Trà đào' ten,
+        49000 gia,
+        'https://placehold.co/600x400?text=Tra+dao' hinh
+    FROM dual
+) s
+ON (t.ten_san_pham = s.ten)
+WHEN MATCHED THEN UPDATE SET
+    t.gia_ban_hien_tai = s.gia,
+    t.hinh_anh = s.hinh,
+    t.trang_thai = 'AVAILABLE'
+WHEN NOT MATCHED THEN INSERT
+    (ten_san_pham, gia_ban_hien_tai, hinh_anh, trang_thai)
+    VALUES (s.ten, s.gia, s.hinh, 'AVAILABLE');
 
 MERGE INTO CONGTHUC_SANPHAM t USING (
     SELECT 'Cà phê sữa đá' sp, 'Cà phê hạt Robusta' nl, 20 qty FROM dual UNION ALL
