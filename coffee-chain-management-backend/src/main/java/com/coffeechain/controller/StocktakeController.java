@@ -1,5 +1,7 @@
 package com.coffeechain.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import com.coffeechain.dto.BaseResponse;
 import com.coffeechain.dto.request.CreateStocktakeRequest;
 import com.coffeechain.dto.request.UpdateStocktakeRequest;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "Kiem kho", description = "Nhom API Kiem kho. Swagger mo ta quyen can co, request, response va luong su dung chinh.")
 @RestController
 @RequestMapping("/api/inventory/stocktakes")
 public class StocktakeController {
@@ -128,7 +131,7 @@ public class StocktakeController {
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestBody CreateStocktakeRequest request
     ) {
-        SessionUser user = authGuard.requirePermission(authHeader, "STOCKTAKE:CREATE");
+        SessionUser user = authGuard.requirePermission(authHeader, "STOCKTAKE:MANAGE");
 
         return ResponseEntity.ok(BaseResponse.created(
                 "Tạo phiếu kiểm kho thành công",
@@ -147,7 +150,7 @@ public class StocktakeController {
             @PathVariable Long id,
             @RequestBody UpdateStocktakeRequest request
     ) {
-        SessionUser user = authGuard.requirePermission(authHeader, "STOCKTAKE:UPDATE");
+        SessionUser user = authGuard.requirePermission(authHeader, "STOCKTAKE:MANAGE");
 
         return ResponseEntity.ok(BaseResponse.ok(
                 "Cập nhật phiếu kiểm kho thành công",
@@ -170,7 +173,7 @@ public class StocktakeController {
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long id
     ) {
-        SessionUser user = authGuard.requirePermission(authHeader, "STOCKTAKE:ADJUST");
+        SessionUser user = authGuard.requirePermission(authHeader, "STOCKTAKE:MANAGE");
 
         return ResponseEntity.ok(BaseResponse.ok(
                 "Hoàn tất kiểm kho thành công",
@@ -188,7 +191,7 @@ public class StocktakeController {
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long id
     ) {
-        SessionUser user = authGuard.requirePermission(authHeader, "STOCKTAKE:CANCEL");
+        SessionUser user = authGuard.requirePermission(authHeader, "STOCKTAKE:MANAGE");
 
         return ResponseEntity.ok(BaseResponse.ok(
                 "Hủy phiếu kiểm kho thành công",

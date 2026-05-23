@@ -1,6 +1,7 @@
 package com.coffeechain.ui;
 
 import com.coffeechain.service.WastageApiClient;
+import com.coffeechain.service.SessionManager;
 import com.coffeechain.service.WastageApiClient.CreateWastageRequest;
 import com.coffeechain.service.WastageApiClient.OptionDto;
 import com.coffeechain.service.WastageApiClient.WastageDto;
@@ -75,7 +76,7 @@ public class BaoCaoHaoHutFrame extends JFrame {
     private final JComboBox<WastageLotDto> lotCombo = new JComboBox<>();
 
     private final JTextField reportDateField = new JTextField(LocalDate.now().toString());
-    private final JTextField reporterField = new JTextField("Hiện tại");
+    private final JTextField reporterField = new JTextField(SessionManager.getCurrentUserDisplayName());
     private final JTextField quantityField = new JTextField();
     private final JTextField remainingField = new JTextField();
     private final JTextField expiryField = new JTextField();
@@ -172,7 +173,7 @@ public class BaoCaoHaoHutFrame extends JFrame {
         addField(card, reportDateField, 890, 34, 180, 34, false, LocalDate.now().toString());
 
         addLabel(card, "Người báo cáo:", 1110, 12, 120, 18);
-        addField(card, reporterField, 1110, 34, 190, 34, false, "Hiện tại");
+        addField(card, reporterField, 1110, 34, 190, 34, false, SessionManager.getCurrentUserDisplayName());
     }
 
     private void buildTables() {

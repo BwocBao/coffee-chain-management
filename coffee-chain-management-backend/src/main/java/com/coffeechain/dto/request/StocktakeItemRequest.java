@@ -1,13 +1,22 @@
 package com.coffeechain.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 
+@Schema(description = "DTO request StocktakeItemRequest. Swagger hien thi cac field frontend can gui len backend.")
 public class StocktakeItemRequest {
+    @Schema(description = "Ma nguyen lieu", example = "1")
     private Long maNguyenLieu;
+    @Schema(description = "Ma lo hang nguyen lieu", example = "1")
     private Long maLoHang;
+    @Schema(description = "So luong ton theo he thong", example = "100.5")
     private BigDecimal soLuongHeThong;
+    @Schema(description = "So luong thuc te kiem dem", example = "100.5")
     private BigDecimal soLuongThucTe;
+    @Schema(description = "Ly do chenh lech", example = "Gia tri mau")
     private String lyDoChenhLech;
+    @Schema(description = "Huong xu ly dong kiem kho", example = "Gia tri mau")
     private String huongXuLy;
 
     public Long getMaNguyenLieu() {

@@ -1,5 +1,7 @@
 package com.coffeechain.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 
 import com.coffeechain.dto.BaseResponse;
 import com.coffeechain.dto.response.InventoryHistoryLookupResponse;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "Tra cuu lich su giao dich kho", description = "Nhom API Tra cuu lich su giao dich kho. Swagger mo ta quyen can co, request, response va luong su dung chinh.")
 @RestController
 @RequestMapping("/api/inventory/history")
 public class InventoryHistoryController {

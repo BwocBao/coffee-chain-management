@@ -1,5 +1,7 @@
 package com.coffeechain.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import com.coffeechain.dto.BaseResponse;
 import com.coffeechain.dto.request.CreateBranchRequest;
 import com.coffeechain.dto.request.UpdateBranchRequest;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Quan ly chi nhanh", description = "Nhom API Quan ly chi nhanh. Swagger mo ta quyen can co, request, response va luong su dung chinh.")
 @RestController
 @RequestMapping("/api/branches")
 public class BranchController {

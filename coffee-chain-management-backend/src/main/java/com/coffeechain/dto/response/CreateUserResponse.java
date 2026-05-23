@@ -1,8 +1,14 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "DTO response CreateUserResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class CreateUserResponse {
+    @Schema(description = "Ten dang nhap", example = "Tên hiển thị mẫu")
     private String tenDangNhap;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (ten vai tro).", example = "Tên hiển thị mẫu")
     private String tenVaiTro;
+    @Schema(description = "Ma chi nhanh lien quan", example = "1")
     private Long maChiNhanh;
 
     public CreateUserResponse() {}

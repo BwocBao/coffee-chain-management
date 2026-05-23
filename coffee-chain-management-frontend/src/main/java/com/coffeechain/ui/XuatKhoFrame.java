@@ -44,6 +44,7 @@ import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.table.DefaultTableModel;
 
 import com.coffeechain.service.InventoryApiClient;
+import com.coffeechain.service.SessionManager;
 import com.coffeechain.service.InventoryApiClient.CreateExportReceiptItemRequest;
 import com.coffeechain.service.InventoryApiClient.CreateExportReceiptRequest;
 import com.coffeechain.service.InventoryApiClient.ExportLotSelectionRequest;
@@ -59,11 +60,87 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 /**
  * Màn hình tạo phiếu xuất kho.
  *
- * Luồng chính:
- * - Mở frame: gọi GET /api/inventory/exports/lookups để load kho, loại xuất, nguyên liệu.
- * - Mặc định: xuất tự động FEFO, frontend không cần chọn lô.
- * - Nâng cao: bật "Chọn lô thủ công", frontend gọi GET /api/inventory/exports/lots
- *   để lấy lô còn tồn theo kho + nguyên liệu, sau đó gửi loHangXuat khi lưu phiếu.
+ * =========================
+ * LUỒNG TỔNG QUAN
+ * =========================
+ *
+ * Khi mở màn hình:
+ * XuatKhoFrame()
+ *   -> buildHeader()
+ *   -> buildReceiptInfo()
+ *   -> buildIngredientPicker()
+ *   -> buildTables()
+ *   -> buildQuickInputRow()
+ *   -> buildLotSection()
+ *   -> buildNoteAndFooter()
+ *   -> bindEvents()
+ *   -> loadLookups()
+ *
+ * Trong đó:
+ * - Các hàm build... chỉ dùng để dựng giao diện.
+ * - bindEvents() dùng để gắn sự kiện cho combo, checkbox, table.
+ * - loadLookups() là API đầu tiên được gọi để lấy dữ liệu kho và loại xuất.
+ *
+ * =========================
+ * LUỒNG API
+ * =========================
+ *
+ * 1. loadLookups()
+ *    -> gọi GET /api/inventory/exports/lookups
+ *    -> đổ dữ liệu vào warehouseCombo và exportTypeCombo
+ *    -> gọi tiếp loadStockForSelectedWarehouse()
+ *
+ * 2. loadStockForSelectedWarehouse()
+ *    -> gọi GET /api/inventory/exports/stock?maKho=...
+ *    -> đổ dữ liệu vào bảng nguyên liệu bên trái
+ *    -> đổ dữ liệu vào ingredientCombo
+ *
+ * 3. Nếu bật "Chọn lô thủ công":
+ *    refreshLotsIfManual()
+ *      -> gọi GET /api/inventory/exports/lots?maKho=...&maNguyenLieu=...
+ *      -> đổ dữ liệu vào bảng lô
+ *
+ * 4. Khi bấm "Lưu phiếu":
+ *    saveReceipt()
+ *      -> gom dữ liệu từ list lines
+ *      -> tạo CreateExportReceiptRequest
+ *      -> gọi POST /api/inventory/exports
+ *
+ * =========================
+ * LUỒNG SỰ KIỆN
+ * =========================
+ *
+ * - Chọn kho:
+ *   warehouseCombo ActionListener
+ *      -> loadStockForSelectedWarehouse()
+ *      -> refreshLotsIfManual()
+ *
+ * - Chọn nguyên liệu:
+ *   ingredientCombo ActionListener
+ *      -> refreshLotsIfManual()
+ *
+ * - Tick chọn lô thủ công:
+ *   manualLotCheckBox ActionListener
+ *      -> handleManualModeChanged()
+ *
+ * - Gõ số lượng ở bảng lô:
+ *   lotTableModel TableModelListener
+ *      -> updateManualQuantityFromLots()
+ *
+ * - Chọn nguyên liệu ở bảng trái:
+ *   ingredientTable ListSelectionListener
+ *      -> fillSelectedIngredientToDetail()
+ *
+ * - Bấm "Thêm vào phiếu":
+ *   addLine()
+ *
+ * - Bấm "Lưu phiếu":
+ *   saveReceipt()
+ *
+ * Lưu ý:
+ * - lines là danh sách dữ liệu thật sẽ gửi backend.
+ * - exportTableModel chỉ là dữ liệu hiển thị cho người dùng xem.
+ * - SwingWorker được dùng để gọi API ở background, tránh làm đứng giao diện Swing.
  */
 public class XuatKhoFrame extends JFrame {
 
@@ -92,7 +169,7 @@ public class XuatKhoFrame extends JFrame {
     private final JCheckBox manualLotCheckBox = new JCheckBox("Chọn lô thủ công");
 
     private final JTextField createdDateField = new JTextField(LocalDate.now().toString());
-    private final JTextField creatorField = new JTextField("Hiện tại");
+    private final JTextField creatorField = new JTextField(SessionManager.getCurrentUserDisplayName());
     private final JTextField quantityField = new JTextField();
     private final JTextField priceField = new JTextField();
     private final JTextArea noteArea = new JTextArea();
@@ -195,6 +272,7 @@ public class XuatKhoFrame extends JFrame {
 
         addLabel(card, "Kho xuất:", 20, 12, 100, 18);
         addCombo(card, warehouseCombo, 20, 34, 250, 34);
+        warehouseCombo.setRenderer(new WarehouseComboRenderer());
 
         addLabel(card, "Loại xuất:", 310, 12, 100, 18);
         addCombo(card, exportTypeCombo, 310, 34, 250, 34);
@@ -204,7 +282,7 @@ public class XuatKhoFrame extends JFrame {
         addField(card, createdDateField, 600, 34, 220, 34, false, LocalDate.now().toString());
 
         addLabel(card, "Người tạo:", 860, 12, 100, 18);
-        addField(card, creatorField, 860, 34, 220, 34, false, "Hiện tại");
+        addField(card, creatorField, 860, 34, 220, 34, false, SessionManager.getCurrentUserDisplayName());
 
         manualLotCheckBox.setBounds(1110, 38, 190, 24);
         manualLotCheckBox.setOpaque(false);
@@ -388,6 +466,28 @@ public class XuatKhoFrame extends JFrame {
         root.add(cancelButton);
     }
 
+    /**
+     * Gắn toàn bộ sự kiện chính của màn hình.
+     *
+     * Đây là hàm quan trọng nhất để hiểu UI phản ứng ra sao.
+     *
+     * 1. warehouseCombo:
+     *    Khi người dùng đổi kho xuất:
+     *    - loadStockForSelectedWarehouse() để load lại tồn kho của kho mới.
+     *    - refreshLotsIfManual() nếu đang bật chọn lô thủ công.
+     *
+     * 2. ingredientCombo:
+     *    Khi người dùng đổi nguyên liệu:
+     *    - refreshLotsIfManual() nếu đang bật chọn lô thủ công.
+     *
+     * 3. manualLotCheckBox:
+     *    Khi tick/bỏ tick chọn lô thủ công:
+     *    - handleManualModeChanged() xử lý bật/tắt chế độ thủ công.
+     *
+     * 4. lotTableModel:
+     *    Khi người dùng nhập số lượng ở cột "SL xuất":
+     *    - updateManualQuantityFromLots() tự cộng tổng số lượng từ các lô.
+     */
     private void bindEvents() {
         warehouseCombo.addActionListener(e -> {
             loadStockForSelectedWarehouse();
@@ -406,6 +506,25 @@ public class XuatKhoFrame extends JFrame {
         });
     }
 
+    /**
+     * Load dữ liệu ban đầu cho màn hình xuất kho.
+     *
+     * API gọi:
+     * GET /api/inventory/exports/lookups
+     *
+     * Dữ liệu nhận:
+     * - Danh sách kho xuất.
+     * - Danh sách loại xuất.
+     *
+     * Sau khi load xong:
+     * - Set dữ liệu cho warehouseCombo.
+     * - Set dữ liệu cho exportTypeCombo.
+     * - Gọi loadStockForSelectedWarehouse() để load nguyên liệu còn tồn của kho đang chọn.
+     *
+     * Vì gọi API có thể mất thời gian, dùng SwingWorker:
+     * - doInBackground(): chạy API ở background thread.
+     * - done(): cập nhật UI sau khi API chạy xong.
+     */
     private void loadLookups() {
         setFormEnabled(false);
         statusLabel.setText("Đang tải dữ liệu...");
@@ -439,6 +558,22 @@ public class XuatKhoFrame extends JFrame {
         }.execute();
     }
 
+    /**
+     * Xử lý khi người dùng bật/tắt "Chọn lô thủ công".
+     *
+     * Nếu đã có dòng xuất trong phiếu:
+     * - Hỏi người dùng có chắc muốn đổi chế độ không.
+     * - Nếu đồng ý thì resetReceipt() để tránh dữ liệu cũ bị lệch.
+     *
+     * Khi bật chọn lô thủ công:
+     * - Bật bảng lotTable.
+     * - Khóa quantityField vì số lượng sẽ được cộng từ bảng lô.
+     * - Gọi refreshLotsIfManual() để load lô còn tồn.
+     *
+     * Khi tắt chọn lô thủ công:
+     * - Tắt bảng lotTable.
+     * - Mở lại quantityField để người dùng tự nhập số lượng tổng.
+     */
     private void handleManualModeChanged() {
         if (!lines.isEmpty()) {
             int confirm = JOptionPane.showConfirmDialog(
@@ -476,6 +611,25 @@ public class XuatKhoFrame extends JFrame {
         }
     }
 
+    /**
+     * Load danh sách lô còn tồn khi đang bật chế độ chọn lô thủ công.
+     *
+     * API gọi:
+     * GET /api/inventory/exports/lots?maKho=...&maNguyenLieu=...
+     *
+     * Điều kiện chạy:
+     * - manualLotCheckBox phải đang được tick.
+     * - Đã chọn kho xuất.
+     * - Đã chọn nguyên liệu.
+     *
+     * Sau khi API trả về:
+     * - currentLots lưu danh sách lô gốc.
+     * - populateLotTable(currentLots) đổ dữ liệu lên bảng lô.
+     *
+     * currentLots rất quan trọng:
+     * - Dòng i trên bảng lotTable tương ứng với currentLots.get(i).
+     * - Khi người dùng nhập SL xuất theo lô, mình dựa vào currentLots để biết maLoHang.
+     */
     private void refreshLotsIfManual() {
         if (!manualLotCheckBox.isSelected()) {
             return;
@@ -524,6 +678,31 @@ public class XuatKhoFrame extends JFrame {
         updateManualQuantityFromLots();
     }
 
+    /**
+     * Thêm một dòng nguyên liệu vào phiếu xuất.
+     *
+     * Hàm này được gọi khi bấm nút "Thêm vào phiếu".
+     *
+     * Luồng xử lý:
+     * 1. Lấy nguyên liệu đang chọn trong ingredientCombo.
+     * 2. Kiểm tra đang ở chế độ FEFO hay chọn lô thủ công.
+     *
+     * Nếu FEFO:
+     * - Đọc số lượng từ quantityField.
+     * - Không gửi danh sách lô.
+     * - Backend sẽ tự chọn lô theo FEFO.
+     *
+     * Nếu chọn lô thủ công:
+     * - Gọi collectManualLotSelections().
+     * - Lấy danh sách lô người dùng nhập.
+     * - Tự tính tổng số lượng từ các lô.
+     *
+     * 3. Đọc đơn giá xuất.
+     * 4. Tạo ExportLine.
+     * 5. Thêm ExportLine vào list lines.
+     * 6. Thêm một dòng hiển thị vào exportTableModel.
+     * 7. Cập nhật tổng tiền bằng updateTotal().
+     */
     private void addLine() {
         OptionDto ingredient = (OptionDto) ingredientCombo.getSelectedItem();
         if (ingredient == null) {
@@ -583,6 +762,25 @@ public class XuatKhoFrame extends JFrame {
         }
     }
 
+    /**
+     * Thu thập dữ liệu lô do người dùng nhập thủ công.
+     *
+     * Hàm này chỉ được gọi khi manualLotCheckBox đang bật.
+     *
+     * Kiểm tra:
+     * - Bảng lô có dữ liệu không.
+     * - Người dùng có nhập SL xuất cho ít nhất một lô không.
+     * - SL xuất theo từng lô phải > 0.
+     * - SL xuất không được vượt quá số lượng còn lại của lô.
+     *
+     * Kết quả trả về:
+     * - selections: danh sách maLoHang + soLuongXuat để gửi backend.
+     * - totalQuantity: tổng số lượng xuất từ các lô.
+     *
+     * Nếu dữ liệu không hợp lệ:
+     * - Hiện cảnh báo.
+     * - Return null để addLine() dừng lại.
+     */
     private ManualLotResult collectManualLotSelections() {
         if (lotTable.isEditing()) {
             lotTable.getCellEditor().stopCellEditing();
@@ -644,6 +842,20 @@ public class XuatKhoFrame extends JFrame {
         return new ManualLotResult(selections, selectedTotal);
     }
 
+    /**
+     * Tự cộng tổng số lượng xuất từ cột "SL xuất" trong bảng lô.
+     *
+     * Hàm này được gọi tự động bởi TableModelListener trong bindEvents().
+     *
+     * Ví dụ:
+     * - Lô 1 nhập 100
+     * - Lô 2 nhập 200
+     * => quantityField sẽ tự hiện 300
+     *
+     * Lưu ý:
+     * - Hàm này chỉ cập nhật giao diện tạm thời.
+     * - Validate chính thức vẫn nằm trong collectManualLotSelections().
+     */
     private void updateManualQuantityFromLots() {
         if (!manualLotCheckBox.isSelected()) {
             return;
@@ -692,6 +904,32 @@ public class XuatKhoFrame extends JFrame {
         updateTotal();
     }
 
+    /**
+     * Lưu phiếu xuất xuống backend.
+     *
+     * Hàm này được gọi khi bấm nút "Lưu phiếu".
+     *
+     * Luồng xử lý:
+     * 1. Lấy kho xuất và loại xuất đang chọn.
+     * 2. Kiểm tra phiếu có ít nhất một dòng trong list lines.
+     * 3. Tạo CreateExportReceiptRequest.
+     * 4. Duyệt list lines để tạo danh sách CreateExportReceiptItemRequest.
+     *
+     * Nếu đang chọn lô thủ công:
+     * - Mỗi item sẽ gửi thêm loHangXuat.
+     *
+     * Nếu FEFO:
+     * - Không gửi loHangXuat.
+     * - Backend tự chọn lô.
+     *
+     * 5. Gọi API POST /api/inventory/exports bằng SwingWorker.
+     * 6. Thành công:
+     *    - Hiện thông báo.
+     *    - resetReceipt().
+     *    - Nếu đang chọn lô thủ công thì refreshLotsIfManual().
+     * 7. Thất bại:
+     *    - Hiện lỗi backend trả về.
+     */
     private void saveReceipt() {
         OptionDto warehouse = (OptionDto) warehouseCombo.getSelectedItem();
         OptionDto exportType = (OptionDto) exportTypeCombo.getSelectedItem();
@@ -986,6 +1224,21 @@ public class XuatKhoFrame extends JFrame {
         return field;
     }
 
+    /**
+     * Load danh sách nguyên liệu còn tồn theo kho đang chọn.
+     *
+     * API gọi:
+     * GET /api/inventory/exports/stock?maKho=...
+     *
+     * Hàm này được gọi trong 2 trường hợp:
+     * 1. Sau khi loadLookups() xong.
+     * 2. Khi người dùng đổi kho trong warehouseCombo.
+     *
+     * Sau khi API trả về:
+     * - allIngredients lưu toàn bộ nguyên liệu còn tồn.
+     * - ingredientCombo được cập nhật để chọn nguyên liệu.
+     * - ingredientTable bên trái được cập nhật để hiển thị danh sách nguyên liệu.
+     */
     private void loadStockForSelectedWarehouse() {
         OptionDto warehouse = (OptionDto) warehouseCombo.getSelectedItem();
         if (warehouse == null) {
@@ -1093,6 +1346,27 @@ public class XuatKhoFrame extends JFrame {
         return current.getMessage() == null ? "Không xử lý được yêu cầu" : current.getMessage();
     }
 
+    /**
+     * Một dòng nguyên liệu đã được thêm vào phiếu xuất.
+     *
+     * Đây là dữ liệu thật dùng để gửi backend.
+     *
+     * ingredient:
+     * - nguyên liệu được chọn.
+     *
+     * quantity:
+     * - tổng số lượng xuất.
+     *
+     * price:
+     * - đơn giá xuất.
+     *
+     * lotMode:
+     * - chỉ dùng để hiển thị trên bảng, ví dụ "FEFO" hoặc "Thủ công".
+     *
+     * lotSelections:
+     * - danh sách lô cụ thể khi chọn lô thủ công.
+     * - nếu FEFO thì danh sách này rỗng.
+     */
     private record ExportLine(
             OptionDto ingredient,
             BigDecimal quantity,
@@ -1178,6 +1452,34 @@ public class XuatKhoFrame extends JFrame {
         }
     }
 
+    private static class WarehouseComboRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(
+                JList<?> list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus
+        ) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(
+                    list,
+                    value,
+                    index,
+                    isSelected,
+                    cellHasFocus
+            );
+
+            if (value instanceof OptionDto option) {
+                label.setText(option.getName() == null ? "" : option.getName());
+            }
+
+            label.setFont(UiTheme.regular(14));
+            label.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 28));
+            label.setForeground(TEXT);
+            label.setBackground(isSelected && index >= 0 ? Color.decode("#F8DCC6") : WHITE);
+            return label;
+        }
+    }
     private static String exportTypeDisplayText(OptionDto option) {
         if (option == null) {
             return "";
@@ -1270,7 +1572,21 @@ public class XuatKhoFrame extends JFrame {
             this.icon = icon;
             this.placeholderColor = placeholderColor;
             this.textColor = textColor;
-            setMargin(new Insets(0, 38, 0, 12));
+            setMargin(new Insets(0, 0, 0, 12));
+        }
+
+        @Override
+        public Insets getInsets() {
+            return new Insets(0, 48, 0, 12);
+        }
+
+        @Override
+        public Insets getInsets(Insets insets) {
+            insets.top = 0;
+            insets.left = 48;
+            insets.bottom = 0;
+            insets.right = 12;
+            return insets;
         }
 
         @Override
@@ -1289,7 +1605,7 @@ public class XuatKhoFrame extends JFrame {
                 g2.setColor(placeholderColor);
                 g2.setFont(getFont());
                 int textY = getHeight() / 2 + g2.getFontMetrics().getAscent() / 2 - 2;
-                g2.drawString(placeholder, 38, textY);
+                g2.drawString(placeholder, 48, textY);
             } else {
                 setForeground(textColor);
             }

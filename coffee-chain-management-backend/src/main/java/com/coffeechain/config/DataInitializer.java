@@ -31,11 +31,18 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
+        nguoiDungRepository.ensurePermissionActionConstraintAllowsManage();
         Long adminRoleId = nguoiDungRepository.getOrCreateRole("ADMIN");
         Long quanLyKhoRoleId = nguoiDungRepository.getOrCreateRole("QUAN_LY_KHO");
         Long quanLyChiNhanhRoleId = nguoiDungRepository.getOrCreateRole("QUAN_LY_CHI_NHANH");
         Long thuNganRoleId = nguoiDungRepository.getOrCreateRole("THU_NGAN");
 
+        nguoiDungRepository.deletePermission("STOCKTAKE", "ADJUST");
+        nguoiDungRepository.deletePermission("STOCKTAKE", "CANCEL");
+        nguoiDungRepository.deletePermission("STOCKTAKE", "COMPLETE");
+        nguoiDungRepository.deletePermission("STOCKTAKE", "CREATE");
+        nguoiDungRepository.deletePermission("STOCKTAKE", "UPDATE");
+        nguoiDungRepository.deletePermission("STOCKTAKE", "DELETE");
         Map<String, List<String>> seed = new LinkedHashMap<>();
         seed.put("USER", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
         seed.put("ROLE", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
@@ -44,11 +51,13 @@ public class DataInitializer implements CommandLineRunner {
         seed.put("INGREDIENT", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
         seed.put("SUPPLIER", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
         seed.put("INVENTORY", List.of("VIEW", "IMPORT", "EXPORT", "TRANSFER", "ADJUST"));
-        seed.put("STOCKTAKE", List.of("VIEW", "CREATE", "UPDATE", "ADJUST"));
+        seed.put("STOCKTAKE", List.of("VIEW", "MANAGE"));
         seed.put("WASTAGE", List.of("VIEW", "CREATE", "UPDATE"));
         seed.put("ORDER", List.of("VIEW", "CREATE", "PAY", "CANCEL", "REFUND"));
         seed.put("REPORT", List.of("VIEW"));
         seed.put("UNIT", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
+        seed.put("WAREHOUSE", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
+        seed.put("RECIPE", List.of("VIEW", "MANAGE"));
 
         for (Map.Entry<String, List<String>> entry : seed.entrySet()) {
             Long maChucNang = nguoiDungRepository.getOrCreateChucNang(entry.getKey());
@@ -63,7 +72,7 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         assign(quanLyKhoRoleId, "INVENTORY", "VIEW", "IMPORT", "EXPORT", "TRANSFER", "ADJUST");
-        assign(quanLyKhoRoleId, "STOCKTAKE", "VIEW", "CREATE", "UPDATE", "ADJUST");
+        assign(quanLyKhoRoleId, "STOCKTAKE", "VIEW", "MANAGE");
         assign(quanLyKhoRoleId, "WASTAGE", "VIEW", "CREATE", "UPDATE");
         assign(quanLyKhoRoleId, "SUPPLIER", "VIEW");
         assign(quanLyKhoRoleId, "INGREDIENT", "VIEW", "CREATE", "UPDATE");
@@ -72,19 +81,21 @@ public class DataInitializer implements CommandLineRunner {
         assign(quanLyKhoRoleId, "REPORT", "VIEW");
         assign(quanLyKhoRoleId, "BRANCH", "VIEW");
         assign(quanLyKhoRoleId, "UNIT", "VIEW", "CREATE", "UPDATE");
+        assign(quanLyKhoRoleId, "WAREHOUSE", "VIEW", "CREATE", "UPDATE", "DELETE");
 
         assign(quanLyChiNhanhRoleId, "USER", "VIEW", "CREATE");
         assign(quanLyChiNhanhRoleId, "BRANCH", "VIEW");
         assign(quanLyChiNhanhRoleId, "INVENTORY", "VIEW");
-        assign(quanLyChiNhanhRoleId, "STOCKTAKE", "VIEW", "CREATE", "UPDATE", "ADJUST");
+        assign(quanLyChiNhanhRoleId, "STOCKTAKE", "VIEW", "MANAGE");
         assign(quanLyChiNhanhRoleId, "WASTAGE", "VIEW", "CREATE", "UPDATE");
         assign(quanLyChiNhanhRoleId, "ORDER", "VIEW", "CREATE", "CANCEL", "REFUND");
         assign(quanLyChiNhanhRoleId, "INGREDIENT", "VIEW");
         assign(quanLyChiNhanhRoleId, "PRODUCT", "VIEW");
         assign(quanLyChiNhanhRoleId, "REPORT", "VIEW");
         assign(quanLyChiNhanhRoleId, "UNIT", "VIEW");
+        assign(quanLyChiNhanhRoleId, "RECIPE", "VIEW");
 
-        assign(thuNganRoleId, "ORDER", "VIEW", "CREATE", "PAY");
+        assign(thuNganRoleId, "ORDER", "VIEW", "CREATE", "PAY", "CANCEL");
         assign(thuNganRoleId, "PRODUCT", "VIEW");
 
         if (!nguoiDungRepository.existsUser(defaultAdminUsername)) {
@@ -141,9 +152,7 @@ public class DataInitializer implements CommandLineRunner {
             case "INVENTORY:ADJUST" -> "Điều chỉnh tồn kho";
 
             case "STOCKTAKE:VIEW" -> "Xem kiểm kho";
-            case "STOCKTAKE:CREATE" -> "Tạo phiếu kiểm kho";
-            case "STOCKTAKE:UPDATE" -> "Sửa phiếu kiểm kho";
-            case "STOCKTAKE:ADJUST" -> "Duyệt điều chỉnh kiểm kho";
+            case "STOCKTAKE:MANAGE" -> "Quản lý phiếu kiểm kho";
 
             case "WASTAGE:VIEW" -> "Xem hao hụt";
             case "WASTAGE:CREATE" -> "Báo hao hụt";
@@ -161,6 +170,14 @@ public class DataInitializer implements CommandLineRunner {
             case "UNIT:CREATE" -> "Tạo đơn vị tính";
             case "UNIT:UPDATE" -> "Sửa đơn vị tính";
             case "UNIT:DELETE" -> "Xóa đơn vị tính";
+
+            case "WAREHOUSE:VIEW" -> "Xem kho";
+            case "WAREHOUSE:CREATE" -> "Tạo kho";
+            case "WAREHOUSE:UPDATE" -> "Sửa kho";
+            case "WAREHOUSE:DELETE" -> "Ngưng hoạt động kho";
+
+            case "RECIPE:VIEW" -> "Xem công thức";
+            case "RECIPE:MANAGE" -> "Quản lý công thức";
 
             default -> module + ":" + action;
         };

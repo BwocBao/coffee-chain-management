@@ -1,5 +1,7 @@
 package com.coffeechain.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import com.coffeechain.dto.BaseResponse;
 import com.coffeechain.dto.response.ExpiryLookupResponse;
 import com.coffeechain.dto.response.ExpiryLotResponse;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Theo doi han su dung lo hang", description = "Nhom API Theo doi han su dung lo hang. Swagger mo ta quyen can co, request, response va luong su dung chinh.")
 @RestController
 @RequestMapping("/api/inventory/expiry")
 public class ExpiryController {

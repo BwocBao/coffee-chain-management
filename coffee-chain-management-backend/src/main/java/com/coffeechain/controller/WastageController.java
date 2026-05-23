@@ -1,5 +1,7 @@
 package com.coffeechain.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import com.coffeechain.dto.BaseResponse;
 import com.coffeechain.dto.request.CreateWastageRequest;
 import com.coffeechain.dto.response.WastageLookupResponse;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "Bao cao hao hut", description = "Nhom API Bao cao hao hut. Swagger mo ta quyen can co, request, response va luong su dung chinh.")
 @RestController
 @RequestMapping("/api/inventory/wastages")
 public class WastageController {

@@ -1,4 +1,7 @@
 package com.coffeechain.dto.request;
 
-public class PosOrderItemRequest {
+public record PosOrderItemRequest(
+        Long maSanPham,
+        Integer soLuong
+) {
 }

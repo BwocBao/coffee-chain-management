@@ -1,11 +1,20 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "DTO response PermissionResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class PermissionResponse {
+    @Schema(description = "Gia tri $field trong response tra ve frontend (ma quyen).", example = "1")
     private Long maQuyen;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (ma chuc nang).", example = "1")
     private Long maChucNang;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (module).", example = "Gia tri mau")
     private String module;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (action).", example = "Gia tri mau")
     private String action;
+    @Schema(description = "Ma xac nhan", example = "Gia tri mau")
     private String code;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (ten quyen).", example = "Tên hiển thị mẫu")
     private String tenQuyen;
 
     public PermissionResponse() {}

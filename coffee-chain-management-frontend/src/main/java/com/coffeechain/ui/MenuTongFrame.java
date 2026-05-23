@@ -75,7 +75,7 @@ public class MenuTongFrame extends JFrame {
         if (PermissionUtil.hasAny(
                 "WAREHOUSE:VIEW", "INGREDIENT:VIEW", "SUPPLIER:VIEW", "UNIT:VIEW",
                 "INVENTORY:VIEW", "INVENTORY:IMPORT", "INVENTORY:EXPORT", "INVENTORY:TRANSFER",
-                "STOCKTAKE:CREATE", "WASTAGE:CREATE")) {
+                "STOCKTAKE:MANAGE", "WASTAGE:CREATE")) {
             items.add(new MenuItem(
                     "Quản lý kho",
                     "Quản lý danh mục và\nnghiệp vụ kho",

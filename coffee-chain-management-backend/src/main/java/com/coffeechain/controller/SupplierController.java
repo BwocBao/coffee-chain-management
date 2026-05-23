@@ -1,5 +1,7 @@
 package com.coffeechain.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import com.coffeechain.dto.BaseResponse;
 import com.coffeechain.dto.request.CreateSupplierRequest;
 import com.coffeechain.dto.request.UpdateSupplierRequest;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Quan ly nha cung cap", description = "Nhom API Quan ly nha cung cap. Swagger mo ta quyen can co, request, response va luong su dung chinh.")
 @RestController
 @RequestMapping("/api/suppliers")
 public class SupplierController {

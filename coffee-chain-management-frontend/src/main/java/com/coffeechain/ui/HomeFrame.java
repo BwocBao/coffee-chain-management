@@ -38,7 +38,7 @@ public class HomeFrame extends JFrame {
                 "INVENTORY:IMPORT",
                 "INVENTORY:EXPORT",
                 "INVENTORY:TRANSFER",
-                "STOCKTAKE:CREATE",
+                "STOCKTAKE:MANAGE",
                 "WASTAGE:CREATE",
                 "WAREHOUSE:VIEW",
                 "INGREDIENT:VIEW",

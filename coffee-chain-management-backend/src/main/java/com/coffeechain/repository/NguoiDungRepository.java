@@ -1,6 +1,7 @@
 package com.coffeechain.repository;
 
 import com.coffeechain.dto.response.CreateUserLookupResponse;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -115,6 +116,24 @@ public class NguoiDungRepository {
         return count != null && count > 0;
     }
 
+
+    public void ensurePermissionActionConstraintAllowsManage() {
+        try {
+            jdbcTemplate.execute("ALTER TABLE QUYEN DROP CONSTRAINT CK_QUYEN_HANH_DONG");
+        } catch (DataAccessException ignored) {
+            // Constraint may not exist in older/dev databases.
+        }
+
+        jdbcTemplate.execute("""
+                ALTER TABLE QUYEN ADD CONSTRAINT CK_QUYEN_HANH_DONG CHECK (
+                    hanh_dong IN (
+                        'VIEW', 'CREATE', 'UPDATE', 'DELETE',
+                        'IMPORT', 'EXPORT', 'TRANSFER', 'ADJUST',
+                        'PAY', 'CANCEL', 'REFUND', 'MANAGE'
+                    )
+                )
+                """);
+    }
     public Long getOrCreateRole(String tenVaiTro) {
         Long id = findRoleId(tenVaiTro);
         if (id != null) return id;
@@ -160,6 +179,14 @@ public class NguoiDungRepository {
                 """, module, action);
     }
 
+    public void deletePermission(String module, String action) {
+        Long permissionId = findPermissionId(module, action);
+        if (permissionId == null) {
+            return;
+        }
+        jdbcTemplate.update("DELETE FROM VAITRO_QUYEN WHERE ma_quyen = ?", permissionId);
+        jdbcTemplate.update("DELETE FROM QUYEN WHERE ma_quyen = ?", permissionId);
+    }
     public void assignPermissionToRole(Long maVaiTro, Long maQuyen) {
         Integer count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM VAITRO_QUYEN WHERE ma_vai_tro = ? AND ma_quyen = ?",

@@ -1,21 +1,37 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Schema(description = "DTO response WastageResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class WastageResponse {
+    @Schema(description = "Ma phieu hao hut", example = "1")
     private Long maPhieuHaoHut;
+    @Schema(description = "Ma kho lien quan den nghiep vu", example = "1")
     private Long maKho;
+    @Schema(description = "Ten kho hien thi tren giao dien", example = "Kho tổng Phụng Lộc")
     private String tenKho;
+    @Schema(description = "Ma nguyen lieu", example = "1")
     private Long maNguyenLieu;
+    @Schema(description = "Ten nguyen lieu", example = "Cà phê hạt Arabica")
     private String tenNguyenLieu;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (don vi tinh).", example = "Gia tri mau")
     private String donViTinh;
+    @Schema(description = "Ma lo hang nguyen lieu", example = "1")
     private Long maLoHang;
+    @Schema(description = "So luong hao hut", example = "100.5")
     private BigDecimal soLuongHaoHut;
+    @Schema(description = "Loai hao hut: DAMAGED, EXPIRED, SPILL, LOST hoac OTHER", example = "Gia tri mau")
     private String loaiHaoHut;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (ngay hao hut).", example = "2026-05-22T08:30:00")
     private LocalDateTime ngayHaoHut;
+    @Schema(description = "Ghi chu nghiep vu", example = "Gia tri mau")
     private String ghiChu;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (ma nguoi bao cao).", example = "1")
     private Long maNguoiBaoCao;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (ten nguoi bao cao).", example = "Tên hiển thị mẫu")
     private String tenNguoiBaoCao;
 
     public WastageResponse() {

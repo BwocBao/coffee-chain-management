@@ -1,17 +1,29 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Schema(description = "DTO response WastageLotResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class WastageLotResponse {
+    @Schema(description = "Ma lo hang nguyen lieu", example = "1")
     private Long maLoHang;
+    @Schema(description = "Ma kho lien quan den nghiep vu", example = "1")
     private Long maKho;
+    @Schema(description = "Ten kho hien thi tren giao dien", example = "Kho tổng Phụng Lộc")
     private String tenKho;
+    @Schema(description = "Ma nguyen lieu", example = "1")
     private Long maNguyenLieu;
+    @Schema(description = "Ten nguyen lieu", example = "Cà phê hạt Arabica")
     private String tenNguyenLieu;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (don vi tinh).", example = "Gia tri mau")
     private String donViTinh;
+    @Schema(description = "So luong con lai", example = "100.5")
     private BigDecimal soLuongConLai;
+    @Schema(description = "Han su dung cua lo hang", example = "2026-05-22")
     private LocalDate hanSuDung;
+    @Schema(description = "Trang thai hien tai cua ban ghi/nghiep vu", example = "ACTIVE")
     private String trangThai;
 
     public WastageLotResponse() {

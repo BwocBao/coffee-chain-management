@@ -235,7 +235,16 @@ public class InventoryController {
         ));
     }
 
-    @GetMapping("/exports/stock")
+    @Operation(
+            summary = "Lay ton kho kha dung cho man hinh xuat kho",
+            description = "Frontend goi API nay sau khi chon kho xuat. Backend tra danh sach nguyen lieu con ton tai kho do, kem don vi tinh va so luong ton de nguoi dung lap phieu xuat. Can quyen INVENTORY:EXPORT. Response data la List<InventoryStockOptionResponse>."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lay ton kho xuat thanh cong"),
+            @ApiResponse(responseCode = "400", description = "Thieu ma kho", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Chua dang nhap hoac token het han", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Khong co quyen xuat kho", content = @Content)
+    })    @GetMapping("/exports/stock")
     public ResponseEntity<BaseResponse<List<InventoryStockOptionResponse>>> exportStock(
             @Parameter(hidden = true)
             @RequestHeader(value = "Authorization", required = false) String authHeader,

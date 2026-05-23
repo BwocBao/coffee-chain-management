@@ -1,6 +1,7 @@
 package com.coffeechain.ui;
 
 import com.coffeechain.service.StocktakeApiClient;
+import com.coffeechain.service.SessionManager;
 import com.coffeechain.service.StocktakeApiClient.OptionDto;
 import com.coffeechain.service.StocktakeApiClient.StocktakeDto;
 import com.coffeechain.service.StocktakeApiClient.StocktakeItemRequest;
@@ -8,6 +9,7 @@ import com.coffeechain.service.StocktakeApiClient.StocktakeLookupDto;
 import com.coffeechain.service.StocktakeApiClient.StocktakeRequest;
 import com.coffeechain.service.StocktakeApiClient.StocktakeSystemStockDto;
 import com.coffeechain.ui.common.IconLoader;
+import com.coffeechain.ui.common.PermissionUtil;
 import com.coffeechain.ui.common.RoundedButton;
 import com.coffeechain.ui.common.RoundedPanel;
 import com.coffeechain.ui.common.UiTheme;
@@ -25,7 +27,8 @@ import java.util.List;
 
 public class KiemKhoFrame extends JFrame {
     private static final int ROOT_W = 1440;
-    private static final int ROOT_H = 790;
+    private static final int ROOT_H = 920;
+    private static final int VIEW_H = 790;
     private static final Color WHITE = Color.WHITE;
     private static final Color PRIMARY = UiTheme.PRIMARY;
     private static final Color TEXT = UiTheme.TEXT_DARK;
@@ -49,7 +52,8 @@ public class KiemKhoFrame extends JFrame {
     private final JComboBox<OptionDto> handlingCombo = new JComboBox<>();
 
     private final JTextField dateField = new JTextField(LocalDate.now().toString());
-    private final JTextField inspectorField = new JTextField("Hiện tại");
+    private final JTextField inspectorField = new JTextField(SessionManager.getCurrentUserDisplayName());
+    private final JTextField historyDateField = new JTextField();
     private final JTextField systemQtyField = new JTextField();
     private final JTextField actualQtyField = new JTextField();
     private final JTextField diffQtyField = new JTextField();
@@ -78,6 +82,7 @@ public class KiemKhoFrame extends JFrame {
     private final List<StocktakeLine> draftLines = new ArrayList<>();
     private boolean loading;
     private boolean suppressEvents;
+    private boolean formActionsEnabled;
     private Long editingStocktakeId;
 
     public KiemKhoFrame() {
@@ -86,7 +91,7 @@ public class KiemKhoFrame extends JFrame {
         setResizable(false);
         root.setPreferredSize(new Dimension(ROOT_W, ROOT_H));
         root.setBackground(WHITE);
-        setContentPane(root);
+        setContentPane(createHiddenPageScrollPane(root));
         buildHeader();
         buildFilterCard();
         buildTables();
@@ -99,6 +104,19 @@ public class KiemKhoFrame extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    private JScrollPane createHiddenPageScrollPane(JPanel panel) {
+        JScrollPane pane = new JScrollPane(panel);
+        pane.setBorder(null);
+        pane.setPreferredSize(new Dimension(ROOT_W, VIEW_H));
+        pane.setWheelScrollingEnabled(true);
+        pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        pane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        pane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
+        pane.getVerticalScrollBar().setMinimumSize(new Dimension(0, 0));
+        pane.getVerticalScrollBar().setMaximumSize(new Dimension(0, Integer.MAX_VALUE));
+        pane.getVerticalScrollBar().setUnitIncrement(28);
+        return pane;
+    }
     private void buildHeader() {
         JLabel title = new JLabel("KIỂM KHO");
         title.setBounds(44, 22, 520, 40);
@@ -118,7 +136,7 @@ public class KiemKhoFrame extends JFrame {
         root.add(title);
         RoundedPanel card = card(44, 104, 1352, 90);
         root.add(card);
-        addLabel(card, "Kho kiểm:", 20, 12, 120, 18); addCombo(card, warehouseCombo, 20, 34, 300, 34);
+        addLabel(card, "Kho kiểm:", 20, 12, 120, 18); addCombo(card, warehouseCombo, 20, 34, 300, 34); warehouseCombo.setRenderer(new NameOnlyComboRenderer());
         addLabel(card, "Nguyên liệu:", 360, 12, 120, 18); addCombo(card, ingredientCombo, 360, 34, 300, 34);
         addLabel(card, "Ngày kiểm:", 700, 12, 120, 18); addField(card, dateField, 700, 34, 170, 34, false);
         addLabel(card, "Người kiểm:", 910, 12, 120, 18); addField(card, inspectorField, 910, 34, 190, 34, false);
@@ -134,26 +152,36 @@ public class KiemKhoFrame extends JFrame {
         stockTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         stockTable.getSelectionModel().addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) fillSelectedStockToForm(); });
         JScrollPane stockScroll = hiddenScrollPane(stockTable);
-        stockScroll.setBounds(44, 246, 600, 160);
+        stockScroll.setBounds(44, 246, 600, 218);
         root.add(stockScroll);
 
         root.add(sectionTitle("PHIẾU KIỂM KHO GẦN ĐÂY", 690, 216));
-        addLabel(root, "Trạng thái phiếu:", 960, 216, 120, 18);
-        addCombo(root, statusCombo, 960, 238, 180, 32);
-        openDraftButton.setBounds(1160, 238, 96, 32);
+        addLabel(root, "Ngày kiểm phiếu:", 690, 244, 100, 18);
+        addField(root, historyDateField, 690, 266, 135, 32, true);
+        historyDateField.setToolTipText("yyyy-MM-dd");
+        addLabel(root, "Trạng thái phiếu:", 845, 244, 130, 18);
+        addCombo(root, statusCombo, 845, 266, 230, 32);
+        statusCombo.setRenderer(new NameOnlyComboRenderer());
+        openDraftButton.setBounds(1100, 266, 100, 32);
         openDraftButton.addActionListener(e -> openSelectedStocktake());
         root.add(openDraftButton);
-        cancelDraftButton.setBounds(1270, 238, 96, 32);
+        cancelDraftButton.setBounds(1215, 266, 110, 32);
         cancelDraftButton.addActionListener(e -> cancelSelectedStocktake());
         root.add(cancelDraftButton);
         configureTable(historyTable, 3);
+        historyTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        historyTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateActionButtons();
+            }
+        });
         JScrollPane historyScroll = hiddenScrollPane(historyTable);
-        historyScroll.setBounds(690, 278, 706, 128);
+        historyScroll.setBounds(690, 310, 706, 154);
         root.add(historyScroll);
     }
     private void buildDetailCard() {
-        root.add(sectionTitle("CHI TIẾT KIỂM KHO", 44, 424));
-        RoundedPanel card = card(44, 454, 1352, 104);
+        root.add(sectionTitle("CHI TIẾT KIỂM KHO", 44, 480));
+        RoundedPanel card = card(44, 510, 1352, 96);
         root.add(card);
         addLabel(card, "Lô hàng:", 20, 12, 120, 18); addCombo(card, lotCombo, 20, 34, 210, 30);
         lotCombo.setRenderer(new LotComboRenderer());
@@ -170,45 +198,45 @@ public class KiemKhoFrame extends JFrame {
     }
 
     private void buildItemTable() {
-        root.add(sectionTitle("DÒNG KIỂM KHO TRONG PHIẾU", 44, 572));
+        root.add(sectionTitle("DÒNG KIỂM KHO TRONG PHIẾU", 44, 620));
         configureTable(itemTable, 5);
         itemTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         itemTable.getSelectionModel().addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) fillSelectedDraftLine(); });
         JScrollPane itemScroll = hiddenScrollPane(itemTable);
-        itemScroll.setBounds(44, 602, 1352, 84);
+        itemScroll.setBounds(44, 650, 1352, 170);
         root.add(itemScroll);
     }
 
     private void buildFooter() {
         JLabel noteLabel = new JLabel("Ghi chú kiểm kho");
-        noteLabel.setBounds(44, 704, 220, 20);
+        noteLabel.setBounds(44, 828, 220, 18);
         noteLabel.setForeground(TEXT);
         noteLabel.setFont(UiTheme.regular(12));
         root.add(noteLabel);
-        RoundedPanel notePanel = card(44, 728, 760, 38);
+        RoundedPanel notePanel = card(44, 848, 760, 32);
         root.add(notePanel);
         noteArea.setFont(UiTheme.regular(13));
         noteArea.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
         JScrollPane noteScroll = new JScrollPane(noteArea);
-        noteScroll.setBounds(1, 1, 758, 36);
+        noteScroll.setBounds(1, 1, 758, 30);
         noteScroll.setBorder(null);
         hideScrollBarsButKeepWheel(noteScroll);
         notePanel.add(noteScroll);
         RoundedButton clearButton = secondaryButton("Xóa dòng");
-        clearButton.setBounds(850, 728, 110, 34);
+        clearButton.setBounds(850, 848, 110, 32);
         clearButton.addActionListener(e -> removeSelectedLine());
         root.add(clearButton);
         RoundedButton resetButton = secondaryButton("Hủy nhập");
-        resetButton.setBounds(980, 728, 110, 34);
+        resetButton.setBounds(980, 848, 110, 32);
         resetButton.addActionListener(e -> resetDraft());
         root.add(resetButton);
-        saveDraftButton.setBounds(1110, 728, 110, 34);
+        saveDraftButton.setBounds(1110, 848, 110, 32);
         saveDraftButton.addActionListener(e -> saveStocktake(false));
         root.add(saveDraftButton);
-        completeButton.setBounds(1240, 728, 110, 34);
+        completeButton.setBounds(1240, 848, 110, 32);
         completeButton.addActionListener(e -> saveStocktake(true));
         root.add(completeButton);
-        statusLabel.setBounds(44, 766, 900, 20);
+        statusLabel.setBounds(44, 884, 900, 18);
         statusLabel.setForeground(MUTED);
         statusLabel.setFont(UiTheme.regular(13));
         root.add(statusLabel);
@@ -218,6 +246,7 @@ public class KiemKhoFrame extends JFrame {
         warehouseCombo.addActionListener(e -> { if (!suppressEvents) loadSystemStockAndHistory(); });
         ingredientCombo.addActionListener(e -> { if (!suppressEvents) loadSystemStockAndHistory(); });
         statusCombo.addActionListener(e -> { if (!suppressEvents) loadHistoryOnly(); });
+        historyDateField.addActionListener(e -> loadHistoryOnly());
         lotCombo.addActionListener(e -> updateStockFieldsFromCombo());
         actualQtyField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { updateDiffField(); }
@@ -264,11 +293,21 @@ public class KiemKhoFrame extends JFrame {
         Long maKho = warehouse.getId();
         Long maNguyenLieu = selectedOptionId(ingredientCombo);
         String trangThai = selectedOptionCode(statusCombo);
+        String fromDate;
+        String toDate;
+        try {
+            fromDate = historyDateParam(false);
+            toDate = historyDateParam(true);
+        } catch (IllegalArgumentException ex) {
+            loading = false;
+            showWarning(ex.getMessage());
+            return;
+        }
         new SwingWorker<StocktakeScreenData, Void>() {
             protected StocktakeScreenData doInBackground() throws Exception {
                 return new StocktakeScreenData(
                         apiClient.getSystemStock(maKho, maNguyenLieu),
-                        apiClient.searchStocktakes(maKho, trangThai, null, null, null)
+                        apiClient.searchStocktakes(maKho, trangThai, fromDate, toDate, null)
                 );
             }
             protected void done() {
@@ -294,8 +333,18 @@ public class KiemKhoFrame extends JFrame {
         loading = true;
         Long maKho = warehouse.getId();
         String trangThai = selectedOptionCode(statusCombo);
+        String fromDate;
+        String toDate;
+        try {
+            fromDate = historyDateParam(false);
+            toDate = historyDateParam(true);
+        } catch (IllegalArgumentException ex) {
+            loading = false;
+            showWarning(ex.getMessage());
+            return;
+        }
         new SwingWorker<List<StocktakeDto>, Void>() {
-            protected List<StocktakeDto> doInBackground() throws Exception { return apiClient.searchStocktakes(maKho, trangThai, null, null, null); }
+            protected List<StocktakeDto> doInBackground() throws Exception { return apiClient.searchStocktakes(maKho, trangThai, fromDate, toDate, null); }
             protected void done() {
                 try {
                     List<StocktakeDto> rows = get();
@@ -538,6 +587,7 @@ public class KiemKhoFrame extends JFrame {
         }
         populateItemTable();
         statusLabel.setText("Đang chỉnh phiếu nháp #" + editingStocktakeId + ". Bấm Lưu nháp để cập nhật hoặc Hoàn tất để chốt phiếu.");
+        updateActionButtons();
     }
 
     private List<StocktakeItemRequest> buildRequestItems() {
@@ -551,11 +601,17 @@ public class KiemKhoFrame extends JFrame {
     }
 
     private void resetDraft() {
-        draftLines.clear(); populateItemTable();
+        editingStocktakeId = null;
+
+        draftLines.clear();
+        populateItemTable();
+
         noteArea.setText("");
         actualQtyField.setText("");
         reasonField.setText("");
+
         updateStockFieldsFromCombo();
+        updateActionButtons();
     }
 
     private void setFormEnabled(boolean enabled) {
@@ -571,12 +627,60 @@ public class KiemKhoFrame extends JFrame {
     }
 
     private void setActionButtonsEnabled(boolean enabled) {
-        saveDraftButton.setEnabled(enabled);
-        completeButton.setEnabled(enabled);
-        openDraftButton.setEnabled(enabled);
-        cancelDraftButton.setEnabled(enabled);
+        formActionsEnabled = enabled;
+        updateActionButtons();
     }
 
+    private void updateActionButtons() {
+        if (!formActionsEnabled) {
+            saveDraftButton.setEnabled(false);
+            completeButton.setEnabled(false);
+            openDraftButton.setEnabled(false);
+            cancelDraftButton.setEnabled(false);
+            return;
+        }
+
+        boolean canManage = PermissionUtil.hasAny("STOCKTAKE:MANAGE");
+
+        boolean selectedDraft = selectedHistoryIsDraft();
+        boolean editingDraft = editingStocktakeId != null;
+
+        saveDraftButton.setEnabled(canManage);
+        completeButton.setEnabled(canManage);
+        openDraftButton.setEnabled(canManage && selectedDraft);
+        cancelDraftButton.setEnabled(canManage && (editingDraft || selectedDraft));
+    }
+
+    private boolean selectedHistoryIsDraft() {
+        int row = historyTable.getSelectedRow();
+        if (row < 0 || row >= historyTable.getRowCount()) {
+            return false;
+        }
+        Object value = historyTable.getValueAt(row, 3);
+        return isDraftStatusText(value == null ? null : value.toString());
+    }
+
+    private boolean isDraftStatusText(String value) {
+        if (value == null) {
+            return false;
+        }
+        String text = value.trim();
+        return "DRAFT".equalsIgnoreCase(text) || text.equalsIgnoreCase(statusLabelText("DRAFT"));
+    }
+
+    private String historyDateParam(boolean endOfDay) {
+        String raw = historyDateField.getText();
+        if (raw == null || raw.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            LocalDate date = LocalDate.parse(raw.trim());
+            return date + (endOfDay ? "T23:59:59" : "T00:00:00");
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Ng\u00E0y phi\u1EBFu ph\u1EA3i c\u00F3 d\u1EA1ng yyyy-MM-dd, v\u00ED d\u1EE5 2026-05-23");
+        }
+    }
     private OptionDto[] withAllOption(String label, List<OptionDto> rows) {
         List<OptionDto> values = new ArrayList<>();
         OptionDto all = new OptionDto(); all.setName(label); values.add(all);
@@ -770,6 +874,20 @@ public class KiemKhoFrame extends JFrame {
         }
     }
 
+    private static class NameOnlyComboRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof OptionDto option) {
+                label.setText(option.getName() == null ? "" : option.getName());
+            }
+            label.setFont(UiTheme.regular(14));
+            label.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 28));
+            label.setForeground(TEXT);
+            label.setBackground(isSelected && index >= 0 ? Color.decode("#F8DCC6") : WHITE);
+            return label;
+        }
+    }
     private static class DesignComboBoxRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {

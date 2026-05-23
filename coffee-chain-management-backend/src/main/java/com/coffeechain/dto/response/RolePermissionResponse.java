@@ -1,12 +1,19 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+@Schema(description = "DTO response RolePermissionResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class RolePermissionResponse {
+    @Schema(description = "Gia tri $field trong response tra ve frontend (ma vai tro).", example = "1")
     private Long maVaiTro;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (ten vai tro).", example = "Tên hiển thị mẫu")
     private String tenVaiTro;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (permission ids).", example = "1")
     private Set<Long> permissionIds = new LinkedHashSet<>();
+    @Schema(description = "Gia tri $field trong response tra ve frontend (permission codes).")
     private Set<String> permissionCodes = new LinkedHashSet<>();
 
     public RolePermissionResponse() {}

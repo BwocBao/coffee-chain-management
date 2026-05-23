@@ -1,25 +1,43 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 
+@Schema(description = "DTO response InventoryHistorySummaryResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class InventoryHistorySummaryResponse {
+    @Schema(description = "Ma kho lien quan den nghiep vu", example = "1")
     private Long maKho;
+    @Schema(description = "Ten kho hien thi tren giao dien", example = "Kho tổng Phụng Lộc")
     private String tenKho;
 
+    @Schema(description = "Ma nguyen lieu", example = "1")
     private Long maNguyenLieu;
+    @Schema(description = "Ten nguyen lieu", example = "Cà phê hạt Arabica")
     private String tenNguyenLieu;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (don vi tinh).", example = "Gia tri mau")
     private String donViTinh;
 
+    @Schema(description = "Gia tri $field trong response tra ve frontend (tong nhap).", example = "100.5")
     private BigDecimal tongNhap;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (tong xuat).", example = "100.5")
     private BigDecimal tongXuat;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (tong dieu chuyen vao).", example = "100.5")
     private BigDecimal tongDieuChuyenVao;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (tong dieu chuyen ra).", example = "100.5")
     private BigDecimal tongDieuChuyenRa;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (tong hao hut).", example = "100.5")
     private BigDecimal tongHaoHut;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (tong ban hang tru kho).", example = "100.5")
     private BigDecimal tongBanHangTruKho;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (tong hoan tru kho).", example = "100.5")
     private BigDecimal tongHoanTruKho;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (tong dieu chinh kiem kho).", example = "100.5")
     private BigDecimal tongDieuChinhKiemKho;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (bien dong rong).", example = "100.5")
     private BigDecimal bienDongRong;
 
+    @Schema(description = "Gia tri $field trong response tra ve frontend (so giao dich).", example = "1")
     private Integer soGiaoDich;
 
     public Long getMaKho() {

@@ -1,11 +1,17 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Schema(description = "DTO response PermissionGroupResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class PermissionGroupResponse {
+    @Schema(description = "Gia tri $field trong response tra ve frontend (module).", example = "Gia tri mau")
     private String module;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (ten module).", example = "Tên hiển thị mẫu")
     private String tenModule;
+    @Schema(description = "Danh sach ma quyen duoc gan")
     private List<PermissionResponse> permissions = new ArrayList<>();
 
     public PermissionGroupResponse() {}

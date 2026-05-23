@@ -1,6 +1,7 @@
 package com.coffeechain.ui;
 
 import com.coffeechain.service.InventoryApiClient;
+import com.coffeechain.service.SessionManager;
 import com.coffeechain.service.InventoryApiClient.CreateTransferReceiptItemRequest;
 import com.coffeechain.service.InventoryApiClient.CreateTransferReceiptRequest;
 import com.coffeechain.service.InventoryApiClient.InventoryLotDto;
@@ -50,7 +51,7 @@ public class DieuChuyenKhoFrame extends JFrame {
     private final JComboBox<InventoryStockDto> ingredientCombo = new JComboBox<>();
     private final JCheckBox manualLotCheckBox = new JCheckBox("Chọn lô thủ công");
     private final JTextField dateField = new JTextField(LocalDate.now().toString());
-    private final JTextField creatorField = new JTextField("Hiện tại");
+    private final JTextField creatorField = new JTextField(SessionManager.getCurrentUserDisplayName());
     private final JTextField quantityField = new JTextField();
     private final JTextArea noteArea = new JTextArea();
     private final JLabel statusLabel = new JLabel("Đang tải dữ liệu...");
@@ -87,8 +88,8 @@ public class DieuChuyenKhoFrame extends JFrame {
     private void buildReceiptInfo() {
         root.add(sectionTitle("Phiếu điều chuyển", 44, 76));
         RoundedPanel card = card(44, 104, 1352, 88); root.add(card);
-        addLabel(card, "Kho nguồn:", 20, 12, 100, 18); addCombo(card, sourceCombo, 20, 34, 250, 34);
-        addLabel(card, "Kho đích:", 310, 12, 100, 18); addCombo(card, destinationCombo, 310, 34, 250, 34);
+        addLabel(card, "Kho nguồn:", 20, 12, 100, 18); addCombo(card, sourceCombo, 20, 34, 250, 34); sourceCombo.setRenderer(new WarehouseComboRenderer());
+        addLabel(card, "Kho đích:", 310, 12, 100, 18); addCombo(card, destinationCombo, 310, 34, 250, 34); destinationCombo.setRenderer(new WarehouseComboRenderer());
         addLabel(card, "Ngày chuyển:", 600, 12, 120, 18); addField(card, dateField, 600, 34, 190, 34, false);
         addLabel(card, "Người tạo:", 830, 12, 100, 18); addField(card, creatorField, 830, 34, 190, 34, false);
         manualLotCheckBox.setBounds(1060, 38, 190, 24); manualLotCheckBox.setOpaque(false); manualLotCheckBox.setFont(UiTheme.regular(13)); card.add(manualLotCheckBox);
@@ -108,18 +109,63 @@ public class DieuChuyenKhoFrame extends JFrame {
         RoundedButton addButton = primaryButton("Thêm vào phiếu"); addButton.setBounds(620, 34, 150, 32); addButton.addActionListener(e -> addLine()); card.add(addButton);
         RoundedButton removeButton = secondaryButton("Xóa dòng"); removeButton.setBounds(790, 34, 100, 32); removeButton.addActionListener(e -> removeLine()); card.add(removeButton);
     }
+
     private void buildLotSection() {
         root.add(sectionTitle("CHỌN LÔ THỦ CÔNG", 44, 596));
-        configureTable(lotTable); JScrollPane lotScroll = hiddenScrollPane(lotTable); lotScroll.setBounds(44, 626, 760, 120); root.add(lotScroll);
-        JLabel hint = new JLabel("Tắt chọn lô thủ công để backend tự xuất FEFO theo hạn sử dụng gần nhất."); hint.setBounds(830, 626, 520, 24); hint.setForeground(MUTED); hint.setFont(UiTheme.regular(13)); root.add(hint);
+
+        configureTable(lotTable);
+
+        JScrollPane lotScroll = hiddenScrollPane(lotTable);
+
+        // Bảng lô nằm bên trái, chừa khoảng trống bên phải cho ghi chú
+        lotScroll.setBounds(44, 626, 780, 150);
+
+        root.add(lotScroll);
     }
 
     private void buildFooter() {
-        JLabel noteLabel = new JLabel("Ghi chú điều chuyển"); noteLabel.setBounds(44, 764, 220, 20); noteLabel.setFont(UiTheme.regular(12)); root.add(noteLabel);
-        RoundedPanel notePanel = card(44, 788, 820, 44); root.add(notePanel); noteArea.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12)); noteArea.setFont(UiTheme.regular(13)); JScrollPane noteScroll = new JScrollPane(noteArea); noteScroll.setBounds(1, 1, 818, 42); noteScroll.setBorder(null); hideScrollBarsButKeepWheel(noteScroll); notePanel.add(noteScroll);
-        RoundedButton cancelButton = secondaryButton("Hủy"); cancelButton.setBounds(1030, 794, 96, 34); cancelButton.addActionListener(e -> resetForm()); root.add(cancelButton);
-        saveButton.setBounds(1160, 794, 132, 34); saveButton.addActionListener(e -> saveTransfer()); root.add(saveButton);
-        statusLabel.setBounds(44, 834, 900, 20); statusLabel.setForeground(MUTED); statusLabel.setFont(UiTheme.regular(13)); root.add(statusLabel);
+        // Ghi chú nằm bên phải bảng chọn lô
+        JLabel noteLabel = new JLabel("Ghi chú điều chuyển");
+        noteLabel.setBounds(860, 596, 220, 20);
+        noteLabel.setForeground(TEXT);
+        noteLabel.setFont(UiTheme.regular(12));
+        root.add(noteLabel);
+
+        RoundedPanel notePanel = card(860, 626, 536, 92);
+        root.add(notePanel);
+
+        noteArea.setFont(UiTheme.regular(13));
+        noteArea.setLineWrap(true);
+        noteArea.setWrapStyleWord(true);
+        noteArea.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        noteArea.setOpaque(false);
+
+        JScrollPane noteScroll = new JScrollPane(noteArea);
+
+// chừa viền 2px mỗi cạnh để không che border của RoundedPanel
+        noteScroll.setBounds(2, 2, 532, 88);
+        noteScroll.setBorder(null);
+        noteScroll.setOpaque(false);
+        noteScroll.getViewport().setOpaque(false);
+
+        hideScrollBarsButKeepWheel(noteScroll);
+        notePanel.add(noteScroll);
+
+        // Status để dưới bảng lô, bên trái
+        statusLabel.setBounds(44, 790, 700, 22);
+        statusLabel.setForeground(MUTED);
+        statusLabel.setFont(UiTheme.regular(13));
+        root.add(statusLabel);
+
+        // Nút nằm dưới ô ghi chú, bên phải
+        RoundedButton cancelButton = secondaryButton("Hủy");
+        cancelButton.setBounds(1100, 742, 110, 36);
+        cancelButton.addActionListener(e -> resetForm());
+        root.add(cancelButton);
+
+        saveButton.setBounds(1230, 742, 132, 36);
+        saveButton.addActionListener(e -> saveTransfer());
+        root.add(saveButton);
     }
 
     private void bindEvents() {
@@ -326,6 +372,20 @@ public class DieuChuyenKhoFrame extends JFrame {
     private static RoundedButton primaryButton(String text) { return new RoundedButton(text).background(PRIMARY).hover(UiTheme.PRIMARY_DARK).radius(10); }
     private static RoundedButton secondaryButton(String text) { RoundedButton b = new RoundedButton(text).background(Color.decode("#B9B9B9")).hover(Color.decode("#A8A8A8")).radius(10); b.setForeground(TEXT); return b; }
 
+    private class WarehouseComboRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean selected, boolean focus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, selected, focus);
+            if (value instanceof OptionDto option) {
+                label.setText(option.getName() == null ? "" : option.getName());
+            }
+            label.setFont(UiTheme.regular(14));
+            label.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 28));
+            label.setForeground(TEXT);
+            label.setBackground(selected && index >= 0 ? Color.decode("#F8DCC6") : WHITE);
+            return label;
+        }
+    }
     private class IngredientRenderer extends DefaultListCellRenderer { public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean selected, boolean focus) { JLabel l = (JLabel) super.getListCellRendererComponent(list, value, index, selected, focus); if (value instanceof InventoryStockDto i) l.setText(i.getName() + " - còn " + format(i.getSoLuongTon()) + " " + valueOrDash(i.getDescription())); return l; } }
     private static class DesignComboBoxUI extends BasicComboBoxUI {
         @Override

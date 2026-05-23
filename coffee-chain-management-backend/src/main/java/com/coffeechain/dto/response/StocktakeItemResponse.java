@@ -1,19 +1,34 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 
+@Schema(description = "DTO response StocktakeItemResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class StocktakeItemResponse {
+    @Schema(description = "Gia tri $field trong response tra ve frontend (ma ct phieu kiem kho).", example = "1")
     private Long maCtPhieuKiemKho;
+    @Schema(description = "Ma phieu kiem kho", example = "1")
     private Long maPhieuKiemKho;
+    @Schema(description = "Ma nguyen lieu", example = "1")
     private Long maNguyenLieu;
+    @Schema(description = "Ten nguyen lieu", example = "Cà phê hạt Arabica")
     private String tenNguyenLieu;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (don vi tinh).", example = "Gia tri mau")
     private String donViTinh;
+    @Schema(description = "Ma lo hang nguyen lieu", example = "1")
     private Long maLoHang;
+    @Schema(description = "So luong ton theo he thong", example = "100.5")
     private BigDecimal soLuongHeThong;
+    @Schema(description = "So luong thuc te kiem dem", example = "100.5")
     private BigDecimal soLuongThucTe;
+    @Schema(description = "So luong chenh lech giua thuc te va he thong", example = "100.5")
     private BigDecimal soLuongChenhLech;
+    @Schema(description = "Ty le chenh lech", example = "100.5")
     private BigDecimal tyLeChenhLech;
+    @Schema(description = "Ly do chenh lech", example = "Gia tri mau")
     private String lyDoChenhLech;
+    @Schema(description = "Huong xu ly dong kiem kho", example = "Gia tri mau")
     private String huongXuLy;
 
     public StocktakeItemResponse() {

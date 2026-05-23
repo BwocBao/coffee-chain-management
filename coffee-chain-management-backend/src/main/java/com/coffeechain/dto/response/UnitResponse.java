@@ -1,8 +1,14 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "DTO response UnitResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class UnitResponse {
+    @Schema(description = "Ma don vi tinh", example = "1")
     private Long maDonViTinh;
+    @Schema(description = "Ten don vi tinh", example = "Tên hiển thị mẫu")
     private String tenDonViTinh;
+    @Schema(description = "Ky hieu don vi tinh", example = "Gia tri mau")
     private String kyHieu;
 
     public UnitResponse() {

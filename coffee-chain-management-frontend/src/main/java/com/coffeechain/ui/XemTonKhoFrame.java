@@ -85,13 +85,25 @@ public class XemTonKhoFrame extends JFrame {
     private final JLabel outStockValue = metricValue();
 
     private final DefaultTableModel stockTableModel = new DefaultTableModel(
-            new Object[]{"Kho", "Nguyên liệu", "DVT", "Tồn", "Tối thiểu", "Trạng thái", "Cập nhật"}, 0
+            new Object[]{
+                    "Kho",
+                    "Nguyên liệu",
+                    "DVT",
+                    "Tồn",
+                    "Tối thiểu",
+                    "Trạng thái",
+                    "Cập nhật",
+                    "maKho",
+                    "maNguyenLieu"
+            },
+            0
     ) {
         @Override
         public boolean isCellEditable(int row, int column) {
             return false;
         }
     };
+
     private final JTable stockTable = new JTable(stockTableModel);
 
     private final DefaultTableModel lotTableModel = new DefaultTableModel(

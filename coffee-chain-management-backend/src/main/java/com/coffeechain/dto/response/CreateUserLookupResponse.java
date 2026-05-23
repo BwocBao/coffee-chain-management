@@ -1,10 +1,15 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Schema(description = "DTO response CreateUserLookupResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class CreateUserLookupResponse {
+    @Schema(description = "Danh sach vai tro")
     private List<OptionDto> roles = new ArrayList<>();
+    @Schema(description = "Danh sach chi nhanh dung cho combobox")
     private List<OptionDto> branches = new ArrayList<>();
 
     public List<OptionDto> getRoles() {
@@ -24,8 +29,11 @@ public class CreateUserLookupResponse {
     }
 
     public static class OptionDto {
+        @Schema(description = "Ma dinh danh cua ban ghi", example = "1")
         private Long id;
+        @Schema(description = "Ten hien thi", example = "Gia tri mau")
         private String name;
+        @Schema(description = "Mo ta hoac thong tin phu", example = "Gia tri mau")
         private String description;
 
         public OptionDto() {

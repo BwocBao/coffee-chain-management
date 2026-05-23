@@ -1,4 +1,11 @@
 package com.coffeechain.dto.response;
 
-public class PosProductResponse {
+import java.math.BigDecimal;
+
+public record PosProductResponse(
+        Long maSanPham,
+        String tenSanPham,
+        String hinhAnh,
+        BigDecimal giaBanHienTai
+) {
 }

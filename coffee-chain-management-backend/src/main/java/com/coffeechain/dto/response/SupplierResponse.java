@@ -1,10 +1,18 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "DTO response SupplierResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class SupplierResponse {
+    @Schema(description = "Ma nha cung cap", example = "1")
     private Long maNhaCungCap;
+    @Schema(description = "Ten nha cung cap", example = "Tên hiển thị mẫu")
     private String tenNhaCungCap;
+    @Schema(description = "So dien thoai lien he", example = "Gia tri mau")
     private String soDienThoai;
+    @Schema(description = "Email lien he hoac tai khoan", example = "admin@phungloc.local")
     private String email;
+    @Schema(description = "Dia chi lien he/hoat dong", example = "Gia tri mau")
     private String diaChi;
 
     public SupplierResponse() {

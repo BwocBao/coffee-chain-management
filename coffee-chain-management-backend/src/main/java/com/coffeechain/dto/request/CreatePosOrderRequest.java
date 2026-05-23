@@ -1,4 +1,11 @@
 package com.coffeechain.dto.request;
 
-public class CreatePosOrderRequest {
+import java.util.List;
+
+public record CreatePosOrderRequest(
+        Long maChiNhanh,
+        Long maPos,
+        List<PosOrderItemRequest> items,
+        String ghiChu
+) {
 }

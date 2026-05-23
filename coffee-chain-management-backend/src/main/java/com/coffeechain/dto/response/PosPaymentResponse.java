@@ -1,4 +1,13 @@
 package com.coffeechain.dto.response;
 
-public class PosPaymentResponse {
+import java.math.BigDecimal;
+
+public record PosPaymentResponse(
+        Long orderCode,
+        BigDecimal soTien,
+        String moTa,
+        String checkoutUrl,
+        String qrCode,
+        String trangThai
+) {
 }

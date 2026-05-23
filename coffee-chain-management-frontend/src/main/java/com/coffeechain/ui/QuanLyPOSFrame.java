@@ -66,14 +66,14 @@ public class QuanLyPOSFrame extends JFrame{
     private void buildMenuCards() {
         List<QuanLyPOSFrame.SystemMenuItem> items = new ArrayList<>();
 
-        if (PermissionUtil.hasAny("ROLE:VIEW", "ROLE:CREATE", "ROLE:UPDATE", "ROLE:DELETE")) {
-            items.add(new QuanLyPOSFrame.SystemMenuItem("Quản lý đơn hàng", "Thêm sửa xóa đơn hàng\nvà thanh toán", ICON_PERMISSION,
-                    () -> FrameNavigator.open(this, new PhanQuyenBaoMatFrame())));
+        if (PermissionUtil.hasAny("ORDER:VIEW", "ORDER:CREATE", "ORDER:PAY")) {
+            items.add(new QuanLyPOSFrame.SystemMenuItem("Quản lý đơn hàng", "Tạo đơn hàng và\nthanh toán POS", ICON_PERMISSION,
+                    () -> javax.swing.JOptionPane.showMessageDialog(this, "Sau này mở màn hình bán hàng POS")));
         }
 
-        if (PermissionUtil.hasAny("USER:CREATE", "USER:VIEW")) {
-            items.add(new QuanLyPOSFrame.SystemMenuItem("Quản lý sản phẩm", "Thêm sửa xóa công thức\nsản phẩm", ICON_CREATE_USER,
-                    () -> FrameNavigator.open(this, new TaoTaiKhoanFrame())));
+        if (PermissionUtil.hasAny("RECIPE:VIEW", "RECIPE:MANAGE")) {
+            items.add(new QuanLyPOSFrame.SystemMenuItem("Quản lý công thức", "Thêm sửa xóa công thức\nsản phẩm", ICON_CREATE_USER,
+                    () -> FrameNavigator.open(this, new QuanLyCongThucFrame())));
         }
 
         if (items.isEmpty()) {

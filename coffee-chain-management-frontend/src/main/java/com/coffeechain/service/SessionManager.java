@@ -28,6 +28,20 @@ public class SessionManager {
         return currentUser;
     }
 
+    public static String getCurrentUserDisplayName() {
+        if (currentUser == null) {
+            return "";
+        }
+
+        String username = currentUser.getTenDangNhap();
+        if (username != null && !username.isBlank()) {
+            return username;
+        }
+
+        String role = currentUser.getTenVaiTro();
+        return role == null ? "" : role;
+    }
+
     public static String getCurrentUserRole() {
         return currentUser == null ? null : currentUser.getTenVaiTro();
     }

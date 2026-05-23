@@ -179,7 +179,7 @@ public class KhoMenuFrame extends JFrame {
                 new KhoMenuItem("Nhập kho", "Tạo phiếu nhập và cập nhật tồn", "INVENTORY:IMPORT", "icons/menu-kho/nhap-kho.svg"),
                 new KhoMenuItem("Xuất kho", "Tạo phiếu xuất và trừ tồn", "INVENTORY:EXPORT", "icons/menu-kho/xuat-kho.svg"),
                 new KhoMenuItem("Điều chuyển kho", "Chuyển giữa các kho nguồn - đích", "INVENTORY:TRANSFER", "icons/menu-kho/dieu-chuyen-kho.svg"),
-                new KhoMenuItem("Kiểm kho", "So sánh tồn hệ thống", "STOCKTAKE:CREATE", "icons/menu-kho/kiem-kho.svg"),
+                new KhoMenuItem("Kiểm kho", "So sánh tồn hệ thống", "STOCKTAKE:MANAGE", "icons/menu-kho/kiem-kho.svg"),
                 new KhoMenuItem("Báo cáo hao hụt", "Ghi nhận hư hỏng, hết hạn, thất thoát", "WASTAGE:CREATE", "icons/menu-kho/bao-cao-hao-hut.svg"),
                 new KhoMenuItem("Xem tồn kho", "Xem tồn hiện tại theo kho/nguyên liệu", "INVENTORY:VIEW", "icons/menu-kho/xem-ton-kho.svg"),
                 new KhoMenuItem("Theo dõi HSD", "Theo dõi lô, HSD và cảnh báo", "INVENTORY:VIEW", "icons/menu-kho/theo-doi-hsd.svg"),

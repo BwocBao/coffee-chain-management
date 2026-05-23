@@ -1,9 +1,16 @@
 package com.coffeechain.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "DTO request UpdateWarehouseRequest. Swagger hien thi cac field frontend can gui len backend.")
 public class UpdateWarehouseRequest {
+    @Schema(description = "Ten kho hien thi tren giao dien", example = "Kho tổng Phụng Lộc")
     private String tenKho;
+    @Schema(description = "Loai kho: CENTRAL hoac BRANCH", example = "Gia tri mau")
     private String loaiKho;
+    @Schema(description = "Ma chi nhanh lien quan", example = "1")
     private Long maChiNhanh;
+    @Schema(description = "Trang thai hien tai cua ban ghi/nghiep vu", example = "ACTIVE")
     private String trangThai;
 
     public String getTenKho() {

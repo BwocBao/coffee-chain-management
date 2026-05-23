@@ -1,13 +1,24 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "DTO response BranchResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class BranchResponse {
+    @Schema(description = "Ma chi nhanh lien quan", example = "1")
     private Long maChiNhanh;
+    @Schema(description = "Ten chi nhanh hien thi tren giao dien", example = "Tên hiển thị mẫu")
     private String tenChiNhanh;
+    @Schema(description = "Dia chi lien he/hoat dong", example = "Gia tri mau")
     private String diaChi;
+    @Schema(description = "So dien thoai lien he", example = "Gia tri mau")
     private String soDienThoai;
+    @Schema(description = "Ma kho lien quan den nghiep vu", example = "1")
     private Long maKho;
+    @Schema(description = "Ten kho hien thi tren giao dien", example = "Kho tổng Phụng Lộc")
     private String tenKho;
+    @Schema(description = "Gia tri $field trong response tra ve frontend (so nhan vien).", example = "1")
     private Integer soNhanVien;
+    @Schema(description = "Trang thai hien tai cua ban ghi/nghiep vu", example = "ACTIVE")
     private String trangThai;
 
     public BranchResponse() {

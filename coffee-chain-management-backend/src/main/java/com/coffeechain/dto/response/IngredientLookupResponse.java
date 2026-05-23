@@ -1,9 +1,13 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Schema(description = "DTO response IngredientLookupResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class IngredientLookupResponse {
+    @Schema(description = "Danh sach don vi tinh dung cho combobox")
     private List<OptionDto> units = new ArrayList<>();
 
     public List<OptionDto> getUnits() {
@@ -15,8 +19,11 @@ public class IngredientLookupResponse {
     }
 
     public static class OptionDto {
+        @Schema(description = "Ma dinh danh cua ban ghi", example = "1")
         private Long id;
+        @Schema(description = "Ten hien thi", example = "Gia tri mau")
         private String name;
+        @Schema(description = "Mo ta hoac thong tin phu", example = "Gia tri mau")
         private String description;
 
         public OptionDto() {

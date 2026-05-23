@@ -1,19 +1,32 @@
 package com.coffeechain.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Schema(description = "DTO response StocktakeResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class StocktakeResponse {
+    @Schema(description = "Ma phieu kiem kho", example = "1")
     private Long maPhieuKiemKho;
+    @Schema(description = "Ma kho lien quan den nghiep vu", example = "1")
     private Long maKho;
+    @Schema(description = "Ten kho hien thi tren giao dien", example = "Kho tổng Phụng Lộc")
     private String tenKho;
+    @Schema(description = "Ngay kiem kho", example = "2026-05-22T08:30:00")
     private LocalDateTime ngayKiemKho;
+    @Schema(description = "Ma nguoi kiem kho", example = "1")
     private Long maNguoiKiem;
+    @Schema(description = "Ten nguoi kiem kho", example = "Tên hiển thị mẫu")
     private String tenNguoiKiem;
+    @Schema(description = "Trang thai hien tai cua ban ghi/nghiep vu", example = "ACTIVE")
     private String trangThai;
+    @Schema(description = "Ghi chu nghiep vu", example = "Gia tri mau")
     private String ghiChu;
+    @Schema(description = "So dong chi tiet trong phieu", example = "1")
     private Integer soDongChiTiet;
+    @Schema(description = "Danh sach dong chi tiet cua phieu")
     private List<StocktakeItemResponse> items = new ArrayList<>();
 
     public StocktakeResponse() {

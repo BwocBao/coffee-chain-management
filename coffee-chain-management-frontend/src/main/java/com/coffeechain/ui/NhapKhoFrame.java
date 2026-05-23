@@ -43,6 +43,7 @@ import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.table.DefaultTableModel;
 
 import com.coffeechain.service.InventoryApiClient;
+import com.coffeechain.service.SessionManager;
 import com.coffeechain.service.InventoryApiClient.CreateImportReceiptItemRequest;
 import com.coffeechain.service.InventoryApiClient.CreateImportReceiptRequest;
 import com.coffeechain.service.InventoryApiClient.ImportReceiptDto;
@@ -84,7 +85,7 @@ public class NhapKhoFrame extends JFrame {
     private final JComboBox<OptionDto> supplierCombo = new JComboBox<>();
     private final JComboBox<OptionDto> ingredientCombo = new JComboBox<>();
     private final JTextField createdDateField = new JTextField(LocalDate.now().toString());
-    private final JTextField creatorField = new JTextField("Hien tai");
+    private final JTextField creatorField = new JTextField(SessionManager.getCurrentUserDisplayName());
     private final JTextField quantityField = new JTextField();
     private final JTextField priceField = new JTextField();
     private final JTextField lotField = new JTextField();
@@ -185,7 +186,7 @@ public class NhapKhoFrame extends JFrame {
         addField(card, createdDateField, 600, 32, 220, 34, false, LocalDate.now().toString());
 
         addLabel(card, "Người tạo:", 860, 10, 100, 18);
-        addField(card, creatorField, 860, 32, 220, 34, false, "Hiện tại");
+        addField(card, creatorField, 860, 32, 220, 34, false, SessionManager.getCurrentUserDisplayName());
 
 //        statusLabel.setBounds(1060, 18, 290, 44);
 //        statusLabel.setForeground(MUTED);
@@ -930,6 +931,7 @@ public class NhapKhoFrame extends JFrame {
             setOpaque(false);
         }
 
+
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
@@ -993,7 +995,21 @@ public class NhapKhoFrame extends JFrame {
             this.icon = icon;
             this.placeholderColor = placeholderColor;
             this.textColor = textColor;
-            setMargin(new Insets(0, 38, 0, 12));
+            setMargin(new Insets(0, 0, 0, 12));
+        }
+
+        @Override
+        public Insets getInsets() {
+            return new Insets(0, 48, 0, 12);
+        }
+
+        @Override
+        public Insets getInsets(Insets insets) {
+            insets.top = 0;
+            insets.left = 48;
+            insets.bottom = 0;
+            insets.right = 12;
+            return insets;
         }
 
         @Override
@@ -1012,7 +1028,7 @@ public class NhapKhoFrame extends JFrame {
                 g2.setColor(placeholderColor);
                 g2.setFont(getFont());
                 int textY = getHeight() / 2 + g2.getFontMetrics().getAscent() / 2 - 2;
-                g2.drawString(placeholder, 38, textY);
+                g2.drawString(placeholder, 48, textY);
             } else {
                 setForeground(textColor);
             }

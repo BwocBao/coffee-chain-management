@@ -52,5 +52,8 @@ public class ApiConfig {
     public static final String BRANCH_STATISTICS_URL = BASE_URL + "/api/branches/statistics";
     public static final String USER_LOOKUPS_URL = BASE_URL + "/api/users/lookups";
     public static final String USERS_URL = BASE_URL + "/api/users";
+    public static final String RECIPES_URL = BASE_URL + "/api/recipes";
+    public static final String RECIPE_LOOKUPS_URL = BASE_URL + "/api/recipes/lookups";
+    public static final String IMAGE_UPLOAD_URL = BASE_URL + "/api/uploads/images";
 }
 
