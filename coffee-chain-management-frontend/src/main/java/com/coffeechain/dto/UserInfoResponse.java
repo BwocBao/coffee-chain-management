@@ -5,33 +5,80 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Thông tin user hiện tại backend trả về sau login hoặc khi gọi /api/auth/me.
- * Frontend dùng role, chi nhánh và permissions trong class này để quyết định quyền truy cập màn hình.
+ * Thông tin user hiện tại backend trả về sau login hoặc khi gọi /api/auth/me. Frontend dùng role,
+ * chi nhánh và permissions trong class này để quyết định quyền truy cập màn hình.
  */
 public class UserInfoResponse {
-    private Long maNguoiDung;
-    private String tenDangNhap;
-    private Long maVaiTro;
-    private String tenVaiTro;
-    private Long maChiNhanh;
-    private String tenChiNhanh;
-    private Set<String> permissions = new LinkedHashSet<>();
-    private LocalDateTime expiredAt;
+  private Long maNguoiDung;
+  private String tenDangNhap;
+  private Long maVaiTro;
+  private String tenVaiTro;
+  private Long maChiNhanh;
+  private String tenChiNhanh;
+  private Set<String> permissions = new LinkedHashSet<>();
+  private LocalDateTime expiredAt;
 
-    public Long getMaNguoiDung() { return maNguoiDung; }
-    public void setMaNguoiDung(Long maNguoiDung) { this.maNguoiDung = maNguoiDung; }
-    public String getTenDangNhap() { return tenDangNhap; }
-    public void setTenDangNhap(String tenDangNhap) { this.tenDangNhap = tenDangNhap; }
-    public Long getMaVaiTro() { return maVaiTro; }
-    public void setMaVaiTro(Long maVaiTro) { this.maVaiTro = maVaiTro; }
-    public String getTenVaiTro() { return tenVaiTro; }
-    public void setTenVaiTro(String tenVaiTro) { this.tenVaiTro = tenVaiTro; }
-    public Long getMaChiNhanh() { return maChiNhanh; }
-    public void setMaChiNhanh(Long maChiNhanh) { this.maChiNhanh = maChiNhanh; }
-    public String getTenChiNhanh() { return tenChiNhanh; }
-    public void setTenChiNhanh(String tenChiNhanh) { this.tenChiNhanh = tenChiNhanh; }
-    public Set<String> getPermissions() { return permissions; }
-    public void setPermissions(Set<String> permissions) { this.permissions = permissions; }
-    public LocalDateTime getExpiredAt() { return expiredAt; }
-    public void setExpiredAt(LocalDateTime expiredAt) { this.expiredAt = expiredAt; }
+  public Long getMaNguoiDung() {
+    return maNguoiDung;
+  }
+
+  public void setMaNguoiDung(Long maNguoiDung) {
+    this.maNguoiDung = maNguoiDung;
+  }
+
+  public String getTenDangNhap() {
+    return tenDangNhap;
+  }
+
+  public void setTenDangNhap(String tenDangNhap) {
+    this.tenDangNhap = tenDangNhap;
+  }
+
+  public Long getMaVaiTro() {
+    return maVaiTro;
+  }
+
+  public void setMaVaiTro(Long maVaiTro) {
+    this.maVaiTro = maVaiTro;
+  }
+
+  public String getTenVaiTro() {
+    return tenVaiTro;
+  }
+
+  public void setTenVaiTro(String tenVaiTro) {
+    this.tenVaiTro = tenVaiTro;
+  }
+
+  public Long getMaChiNhanh() {
+    return maChiNhanh;
+  }
+
+  public void setMaChiNhanh(Long maChiNhanh) {
+    this.maChiNhanh = maChiNhanh;
+  }
+
+  public String getTenChiNhanh() {
+    return tenChiNhanh;
+  }
+
+  public void setTenChiNhanh(String tenChiNhanh) {
+    this.tenChiNhanh = tenChiNhanh;
+  }
+
+  public Set<String> getPermissions() {
+    return permissions;
+  }
+
+  public void setPermissions(Set<String> permissions) {
+    this.permissions = permissions;
+  }
+
+  public LocalDateTime getExpiredAt() {
+    return expiredAt;
+  }
+
+  public void setExpiredAt(LocalDateTime expiredAt) {
+    this.expiredAt = expiredAt;
+  }
 }

@@ -2,76 +2,100 @@ package com.coffeechain.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "DTO response BranchStatisticsResponse. Swagger hien thi cac field backend tra ve cho frontend.")
+@Schema(
+    description =
+        "DTO response BranchStatisticsResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class BranchStatisticsResponse {
-    @Schema(description = "Gia tri $field trong response tra ve frontend (tong so chi nhanh).", example = "1")
-    private Integer tongSoChiNhanh;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (so chi nhanh dang hoat dong).", example = "1")
-    private Integer soChiNhanhDangHoatDong;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (so chi nhanh da dong).", example = "1")
-    private Integer soChiNhanhDaDong;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (so chi nhanh bao tri).", example = "1")
-    private Integer soChiNhanhBaoTri;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (ma chi nhanh nhieu nhan vien nhat).", example = "1")
-    private Long maChiNhanhNhieuNhanVienNhat;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (ten chi nhanh nhieu nhan vien nhat).", example = "Tên hiển thị mẫu")
-    private String tenChiNhanhNhieuNhanVienNhat;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (so nhan vien nhieu nhat).", example = "1")
-    private Integer soNhanVienNhieuNhat;
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (tong so chi nhanh).",
+      example = "1")
+  private Integer tongSoChiNhanh;
 
-    public Integer getTongSoChiNhanh() {
-        return tongSoChiNhanh;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (so chi nhanh dang hoat dong).",
+      example = "1")
+  private Integer soChiNhanhDangHoatDong;
 
-    public void setTongSoChiNhanh(Integer tongSoChiNhanh) {
-        this.tongSoChiNhanh = tongSoChiNhanh;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (so chi nhanh da dong).",
+      example = "1")
+  private Integer soChiNhanhDaDong;
 
-    public Integer getSoChiNhanhDangHoatDong() {
-        return soChiNhanhDangHoatDong;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (so chi nhanh bao tri).",
+      example = "1")
+  private Integer soChiNhanhBaoTri;
 
-    public void setSoChiNhanhDangHoatDong(Integer soChiNhanhDangHoatDong) {
-        this.soChiNhanhDangHoatDong = soChiNhanhDangHoatDong;
-    }
+  @Schema(
+      description =
+          "Gia tri $field trong response tra ve frontend (ma chi nhanh nhieu nhan vien nhat).",
+      example = "1")
+  private Long maChiNhanhNhieuNhanVienNhat;
 
-    public Integer getSoChiNhanhDaDong() {
-        return soChiNhanhDaDong;
-    }
+  @Schema(
+      description =
+          "Gia tri $field trong response tra ve frontend (ten chi nhanh nhieu nhan vien nhat).",
+      example = "Tên hiển thị mẫu")
+  private String tenChiNhanhNhieuNhanVienNhat;
 
-    public void setSoChiNhanhDaDong(Integer soChiNhanhDaDong) {
-        this.soChiNhanhDaDong = soChiNhanhDaDong;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (so nhan vien nhieu nhat).",
+      example = "1")
+  private Integer soNhanVienNhieuNhat;
 
-    public Integer getSoChiNhanhBaoTri() {
-        return soChiNhanhBaoTri;
-    }
+  public Integer getTongSoChiNhanh() {
+    return tongSoChiNhanh;
+  }
 
-    public void setSoChiNhanhBaoTri(Integer soChiNhanhBaoTri) {
-        this.soChiNhanhBaoTri = soChiNhanhBaoTri;
-    }
+  public void setTongSoChiNhanh(Integer tongSoChiNhanh) {
+    this.tongSoChiNhanh = tongSoChiNhanh;
+  }
 
-    public Long getMaChiNhanhNhieuNhanVienNhat() {
-        return maChiNhanhNhieuNhanVienNhat;
-    }
+  public Integer getSoChiNhanhDangHoatDong() {
+    return soChiNhanhDangHoatDong;
+  }
 
-    public void setMaChiNhanhNhieuNhanVienNhat(Long maChiNhanhNhieuNhanVienNhat) {
-        this.maChiNhanhNhieuNhanVienNhat = maChiNhanhNhieuNhanVienNhat;
-    }
+  public void setSoChiNhanhDangHoatDong(Integer soChiNhanhDangHoatDong) {
+    this.soChiNhanhDangHoatDong = soChiNhanhDangHoatDong;
+  }
 
-    public String getTenChiNhanhNhieuNhanVienNhat() {
-        return tenChiNhanhNhieuNhanVienNhat;
-    }
+  public Integer getSoChiNhanhDaDong() {
+    return soChiNhanhDaDong;
+  }
 
-    public void setTenChiNhanhNhieuNhanVienNhat(String tenChiNhanhNhieuNhanVienNhat) {
-        this.tenChiNhanhNhieuNhanVienNhat = tenChiNhanhNhieuNhanVienNhat;
-    }
+  public void setSoChiNhanhDaDong(Integer soChiNhanhDaDong) {
+    this.soChiNhanhDaDong = soChiNhanhDaDong;
+  }
 
-    public Integer getSoNhanVienNhieuNhat() {
-        return soNhanVienNhieuNhat;
-    }
+  public Integer getSoChiNhanhBaoTri() {
+    return soChiNhanhBaoTri;
+  }
 
-    public void setSoNhanVienNhieuNhat(Integer soNhanVienNhieuNhat) {
-        this.soNhanVienNhieuNhat = soNhanVienNhieuNhat;
-    }
+  public void setSoChiNhanhBaoTri(Integer soChiNhanhBaoTri) {
+    this.soChiNhanhBaoTri = soChiNhanhBaoTri;
+  }
+
+  public Long getMaChiNhanhNhieuNhanVienNhat() {
+    return maChiNhanhNhieuNhanVienNhat;
+  }
+
+  public void setMaChiNhanhNhieuNhanVienNhat(Long maChiNhanhNhieuNhanVienNhat) {
+    this.maChiNhanhNhieuNhanVienNhat = maChiNhanhNhieuNhanVienNhat;
+  }
+
+  public String getTenChiNhanhNhieuNhanVienNhat() {
+    return tenChiNhanhNhieuNhanVienNhat;
+  }
+
+  public void setTenChiNhanhNhieuNhanVienNhat(String tenChiNhanhNhieuNhanVienNhat) {
+    this.tenChiNhanhNhieuNhanVienNhat = tenChiNhanhNhieuNhanVienNhat;
+  }
+
+  public Integer getSoNhanVienNhieuNhat() {
+    return soNhanVienNhieuNhat;
+  }
+
+  public void setSoNhanVienNhieuNhat(Integer soNhanVienNhieuNhat) {
+    this.soNhanVienNhieuNhat = soNhanVienNhieuNhat;
+  }
 }

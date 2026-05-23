@@ -1,162 +1,196 @@
 package com.coffeechain.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.math.BigDecimal;
 
-@Schema(description = "DTO response InventoryHistorySummaryResponse. Swagger hien thi cac field backend tra ve cho frontend.")
+@Schema(
+    description =
+        "DTO response InventoryHistorySummaryResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class InventoryHistorySummaryResponse {
-    @Schema(description = "Ma kho lien quan den nghiep vu", example = "1")
-    private Long maKho;
-    @Schema(description = "Ten kho hien thi tren giao dien", example = "Kho tổng Phụng Lộc")
-    private String tenKho;
+  @Schema(description = "Ma kho lien quan den nghiep vu", example = "1")
+  private Long maKho;
 
-    @Schema(description = "Ma nguyen lieu", example = "1")
-    private Long maNguyenLieu;
-    @Schema(description = "Ten nguyen lieu", example = "Cà phê hạt Arabica")
-    private String tenNguyenLieu;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (don vi tinh).", example = "Gia tri mau")
-    private String donViTinh;
+  @Schema(description = "Ten kho hien thi tren giao dien", example = "Kho tổng Phụng Lộc")
+  private String tenKho;
 
-    @Schema(description = "Gia tri $field trong response tra ve frontend (tong nhap).", example = "100.5")
-    private BigDecimal tongNhap;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (tong xuat).", example = "100.5")
-    private BigDecimal tongXuat;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (tong dieu chuyen vao).", example = "100.5")
-    private BigDecimal tongDieuChuyenVao;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (tong dieu chuyen ra).", example = "100.5")
-    private BigDecimal tongDieuChuyenRa;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (tong hao hut).", example = "100.5")
-    private BigDecimal tongHaoHut;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (tong ban hang tru kho).", example = "100.5")
-    private BigDecimal tongBanHangTruKho;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (tong hoan tru kho).", example = "100.5")
-    private BigDecimal tongHoanTruKho;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (tong dieu chinh kiem kho).", example = "100.5")
-    private BigDecimal tongDieuChinhKiemKho;
-    @Schema(description = "Gia tri $field trong response tra ve frontend (bien dong rong).", example = "100.5")
-    private BigDecimal bienDongRong;
+  @Schema(description = "Ma nguyen lieu", example = "1")
+  private Long maNguyenLieu;
 
-    @Schema(description = "Gia tri $field trong response tra ve frontend (so giao dich).", example = "1")
-    private Integer soGiaoDich;
+  @Schema(description = "Ten nguyen lieu", example = "Cà phê hạt Arabica")
+  private String tenNguyenLieu;
 
-    public Long getMaKho() {
-        return maKho;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (don vi tinh).",
+      example = "Gia tri mau")
+  private String donViTinh;
 
-    public void setMaKho(Long maKho) {
-        this.maKho = maKho;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (tong nhap).",
+      example = "100.5")
+  private BigDecimal tongNhap;
 
-    public String getTenKho() {
-        return tenKho;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (tong xuat).",
+      example = "100.5")
+  private BigDecimal tongXuat;
 
-    public void setTenKho(String tenKho) {
-        this.tenKho = tenKho;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (tong dieu chuyen vao).",
+      example = "100.5")
+  private BigDecimal tongDieuChuyenVao;
 
-    public Long getMaNguyenLieu() {
-        return maNguyenLieu;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (tong dieu chuyen ra).",
+      example = "100.5")
+  private BigDecimal tongDieuChuyenRa;
 
-    public void setMaNguyenLieu(Long maNguyenLieu) {
-        this.maNguyenLieu = maNguyenLieu;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (tong hao hut).",
+      example = "100.5")
+  private BigDecimal tongHaoHut;
 
-    public String getTenNguyenLieu() {
-        return tenNguyenLieu;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (tong ban hang tru kho).",
+      example = "100.5")
+  private BigDecimal tongBanHangTruKho;
 
-    public void setTenNguyenLieu(String tenNguyenLieu) {
-        this.tenNguyenLieu = tenNguyenLieu;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (tong hoan tru kho).",
+      example = "100.5")
+  private BigDecimal tongHoanTruKho;
 
-    public String getDonViTinh() {
-        return donViTinh;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (tong dieu chinh kiem kho).",
+      example = "100.5")
+  private BigDecimal tongDieuChinhKiemKho;
 
-    public void setDonViTinh(String donViTinh) {
-        this.donViTinh = donViTinh;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (bien dong rong).",
+      example = "100.5")
+  private BigDecimal bienDongRong;
 
-    public BigDecimal getTongNhap() {
-        return tongNhap;
-    }
+  @Schema(
+      description = "Gia tri $field trong response tra ve frontend (so giao dich).",
+      example = "1")
+  private Integer soGiaoDich;
 
-    public void setTongNhap(BigDecimal tongNhap) {
-        this.tongNhap = tongNhap;
-    }
+  public Long getMaKho() {
+    return maKho;
+  }
 
-    public BigDecimal getTongXuat() {
-        return tongXuat;
-    }
+  public void setMaKho(Long maKho) {
+    this.maKho = maKho;
+  }
 
-    public void setTongXuat(BigDecimal tongXuat) {
-        this.tongXuat = tongXuat;
-    }
+  public String getTenKho() {
+    return tenKho;
+  }
 
-    public BigDecimal getTongDieuChuyenVao() {
-        return tongDieuChuyenVao;
-    }
+  public void setTenKho(String tenKho) {
+    this.tenKho = tenKho;
+  }
 
-    public void setTongDieuChuyenVao(BigDecimal tongDieuChuyenVao) {
-        this.tongDieuChuyenVao = tongDieuChuyenVao;
-    }
+  public Long getMaNguyenLieu() {
+    return maNguyenLieu;
+  }
 
-    public BigDecimal getTongDieuChuyenRa() {
-        return tongDieuChuyenRa;
-    }
+  public void setMaNguyenLieu(Long maNguyenLieu) {
+    this.maNguyenLieu = maNguyenLieu;
+  }
 
-    public void setTongDieuChuyenRa(BigDecimal tongDieuChuyenRa) {
-        this.tongDieuChuyenRa = tongDieuChuyenRa;
-    }
+  public String getTenNguyenLieu() {
+    return tenNguyenLieu;
+  }
 
-    public BigDecimal getTongHaoHut() {
-        return tongHaoHut;
-    }
+  public void setTenNguyenLieu(String tenNguyenLieu) {
+    this.tenNguyenLieu = tenNguyenLieu;
+  }
 
-    public void setTongHaoHut(BigDecimal tongHaoHut) {
-        this.tongHaoHut = tongHaoHut;
-    }
+  public String getDonViTinh() {
+    return donViTinh;
+  }
 
-    public BigDecimal getTongBanHangTruKho() {
-        return tongBanHangTruKho;
-    }
+  public void setDonViTinh(String donViTinh) {
+    this.donViTinh = donViTinh;
+  }
 
-    public void setTongBanHangTruKho(BigDecimal tongBanHangTruKho) {
-        this.tongBanHangTruKho = tongBanHangTruKho;
-    }
+  public BigDecimal getTongNhap() {
+    return tongNhap;
+  }
 
-    public BigDecimal getTongHoanTruKho() {
-        return tongHoanTruKho;
-    }
+  public void setTongNhap(BigDecimal tongNhap) {
+    this.tongNhap = tongNhap;
+  }
 
-    public void setTongHoanTruKho(BigDecimal tongHoanTruKho) {
-        this.tongHoanTruKho = tongHoanTruKho;
-    }
+  public BigDecimal getTongXuat() {
+    return tongXuat;
+  }
 
-    public BigDecimal getTongDieuChinhKiemKho() {
-        return tongDieuChinhKiemKho;
-    }
+  public void setTongXuat(BigDecimal tongXuat) {
+    this.tongXuat = tongXuat;
+  }
 
-    public void setTongDieuChinhKiemKho(BigDecimal tongDieuChinhKiemKho) {
-        this.tongDieuChinhKiemKho = tongDieuChinhKiemKho;
-    }
+  public BigDecimal getTongDieuChuyenVao() {
+    return tongDieuChuyenVao;
+  }
 
-    public BigDecimal getBienDongRong() {
-        return bienDongRong;
-    }
+  public void setTongDieuChuyenVao(BigDecimal tongDieuChuyenVao) {
+    this.tongDieuChuyenVao = tongDieuChuyenVao;
+  }
 
-    public void setBienDongRong(BigDecimal bienDongRong) {
-        this.bienDongRong = bienDongRong;
-    }
+  public BigDecimal getTongDieuChuyenRa() {
+    return tongDieuChuyenRa;
+  }
 
-    public Integer getSoGiaoDich() {
-        return soGiaoDich;
-    }
+  public void setTongDieuChuyenRa(BigDecimal tongDieuChuyenRa) {
+    this.tongDieuChuyenRa = tongDieuChuyenRa;
+  }
 
-    public void setSoGiaoDich(Integer soGiaoDich) {
-        this.soGiaoDich = soGiaoDich;
-    }
+  public BigDecimal getTongHaoHut() {
+    return tongHaoHut;
+  }
+
+  public void setTongHaoHut(BigDecimal tongHaoHut) {
+    this.tongHaoHut = tongHaoHut;
+  }
+
+  public BigDecimal getTongBanHangTruKho() {
+    return tongBanHangTruKho;
+  }
+
+  public void setTongBanHangTruKho(BigDecimal tongBanHangTruKho) {
+    this.tongBanHangTruKho = tongBanHangTruKho;
+  }
+
+  public BigDecimal getTongHoanTruKho() {
+    return tongHoanTruKho;
+  }
+
+  public void setTongHoanTruKho(BigDecimal tongHoanTruKho) {
+    this.tongHoanTruKho = tongHoanTruKho;
+  }
+
+  public BigDecimal getTongDieuChinhKiemKho() {
+    return tongDieuChinhKiemKho;
+  }
+
+  public void setTongDieuChinhKiemKho(BigDecimal tongDieuChinhKiemKho) {
+    this.tongDieuChinhKiemKho = tongDieuChinhKiemKho;
+  }
+
+  public BigDecimal getBienDongRong() {
+    return bienDongRong;
+  }
+
+  public void setBienDongRong(BigDecimal bienDongRong) {
+    this.bienDongRong = bienDongRong;
+  }
+
+  public Integer getSoGiaoDich() {
+    return soGiaoDich;
+  }
+
+  public void setSoGiaoDich(Integer soGiaoDich) {
+    this.soGiaoDich = soGiaoDich;
+  }
 }

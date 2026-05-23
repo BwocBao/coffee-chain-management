@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class CoffeeChainManagementBackendApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(CoffeeChainManagementBackendApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(CoffeeChainManagementBackendApplication.class, args);
+  }
 }

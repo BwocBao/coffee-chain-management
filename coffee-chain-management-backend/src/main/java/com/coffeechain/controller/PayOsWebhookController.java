@@ -17,21 +17,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(
-        name = "Webhook thanh toan payOS",
-        description = "Endpoint public de payOS goi khi giao dich QR thay doi trang thai. API khong dung AuthGuard, ma xac thuc bang checksum/signature payOS."
-)
+    name = "Webhook thanh toan payOS",
+    description =
+        "Endpoint public de payOS goi khi giao dich QR thay doi trang thai. API khong dung AuthGuard, ma xac thuc bang checksum/signature payOS.")
 @RestController
 @RequestMapping("/api/payments/payos")
 public class PayOsWebhookController {
-    private final PayOsPaymentService payOsPaymentService;
+  private final PayOsPaymentService payOsPaymentService;
 
-    public PayOsWebhookController(PayOsPaymentService payOsPaymentService) {
-        this.payOsPaymentService = payOsPaymentService;
-    }
+  public PayOsWebhookController(PayOsPaymentService payOsPaymentService) {
+    this.payOsPaymentService = payOsPaymentService;
+  }
 
-    @Operation(
-            summary = "Nhan webhook thanh toan payOS",
-            description = """
+  @Operation(
+      summary = "Nhan webhook thanh toan payOS",
+      description =
+          """
                     payOS goi API nay sau khi khach quet QR va thanh toan/huy/thanh toan that bai.
                     Backend verify webhook bang payOS SDK, tim THANHTOAN_PAYOS theo orderCode, cap nhat HOADON va tru kho neu thanh toan thanh cong.
 
@@ -47,14 +48,17 @@ public class PayOsWebhookController {
 
                     Request class: raw JSON webhook cua payOS.
                     Response class: PayOsWebhookResponse.
-                    """
-    )
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Raw webhook JSON tu payOS",
-            required = true,
-            content = @Content(
-                    schema = @Schema(implementation = Object.class),
-                    examples = @ExampleObject(value = """
+                    """)
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      description = "Raw webhook JSON tu payOS",
+      required = true,
+      content =
+          @Content(
+              schema = @Schema(implementation = Object.class),
+              examples =
+                  @ExampleObject(
+                      value =
+                          """
                             {
                               "code": "00",
                               "desc": "success",
@@ -68,19 +72,22 @@ public class PayOsWebhookController {
                               },
                               "signature": "payos-signature"
                             }
-                            """)
-            )
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Webhook hop le va da xu ly xong"),
-            @ApiResponse(responseCode = "400", description = "Webhook khong hop le hoac verify that bai", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Khong tim thay giao dich payOS/hoa don", content = @Content)
-    })
-    @PostMapping("/webhook")
-    public ResponseEntity<BaseResponse<PayOsWebhookResponse>> webhook(@RequestBody String rawBody) {
-        return ResponseEntity.ok(BaseResponse.ok(
-                "Xu ly webhook payOS thanh cong",
-                payOsPaymentService.handleWebhook(rawBody)
-        ));
-    }
+                            """)))
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Webhook hop le va da xu ly xong"),
+    @ApiResponse(
+        responseCode = "400",
+        description = "Webhook khong hop le hoac verify that bai",
+        content = @Content),
+    @ApiResponse(
+        responseCode = "404",
+        description = "Khong tim thay giao dich payOS/hoa don",
+        content = @Content)
+  })
+  @PostMapping("/webhook")
+  public ResponseEntity<BaseResponse<PayOsWebhookResponse>> webhook(@RequestBody String rawBody) {
+    return ResponseEntity.ok(
+        BaseResponse.ok(
+            "Xu ly webhook payOS thanh cong", payOsPaymentService.handleWebhook(rawBody)));
+  }
 }

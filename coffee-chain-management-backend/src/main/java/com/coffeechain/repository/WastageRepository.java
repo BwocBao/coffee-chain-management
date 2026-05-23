@@ -3,89 +3,90 @@ package com.coffeechain.repository;
 import com.coffeechain.dto.response.WastageLookupResponse;
 import com.coffeechain.dto.response.WastageLotResponse;
 import com.coffeechain.dto.response.WastageResponse;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.stereotype.Repository;
-
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class WastageRepository {
-    private final JdbcTemplate jdbcTemplate;
-    private final SimpleJdbcInsert wastageInsert;
+  private final JdbcTemplate jdbcTemplate;
+  private final SimpleJdbcInsert wastageInsert;
 
-    public WastageRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.wastageInsert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("PHIEUHAOHUT")
-                .usingGeneratedKeyColumns("ma_phieu_hao_hut")
-                .usingColumns(
-                        "ma_kho",
-                        "ma_nguyen_lieu",
-                        "ma_lo_hang",
-                        "so_luong_hao_hut",
-                        "loai_hao_hut",
-                        "ghi_chu",
-                        "nguoi_bao_cao"
-                );
-    }
+  public WastageRepository(JdbcTemplate jdbcTemplate) {
+    this.jdbcTemplate = jdbcTemplate;
+    this.wastageInsert =
+        new SimpleJdbcInsert(jdbcTemplate)
+            .withTableName("PHIEUHAOHUT")
+            .usingGeneratedKeyColumns("ma_phieu_hao_hut")
+            .usingColumns(
+                "ma_kho",
+                "ma_nguyen_lieu",
+                "ma_lo_hang",
+                "so_luong_hao_hut",
+                "loai_hao_hut",
+                "ghi_chu",
+                "nguoi_bao_cao");
+  }
 
-    private final RowMapper<WastageResponse> wastageMapper = (rs, rowNum) -> {
+  private final RowMapper<WastageResponse> wastageMapper =
+      (rs, rowNum) -> {
         Long maLoHang = rs.getObject("ma_lo_hang") == null ? null : rs.getLong("ma_lo_hang");
-        Long maNguoiBaoCao = rs.getObject("nguoi_bao_cao") == null ? null : rs.getLong("nguoi_bao_cao");
+        Long maNguoiBaoCao =
+            rs.getObject("nguoi_bao_cao") == null ? null : rs.getLong("nguoi_bao_cao");
 
         Timestamp ts = rs.getTimestamp("ngay_hao_hut");
         LocalDateTime ngayHaoHut = ts == null ? null : ts.toLocalDateTime();
 
         return new WastageResponse(
-                rs.getLong("ma_phieu_hao_hut"),
-                rs.getLong("ma_kho"),
-                rs.getString("ten_kho"),
-                rs.getLong("ma_nguyen_lieu"),
-                rs.getString("ten_nguyen_lieu"),
-                rs.getString("don_vi_tinh"),
-                maLoHang,
-                rs.getBigDecimal("so_luong_hao_hut"),
-                rs.getString("loai_hao_hut"),
-                ngayHaoHut,
-                rs.getString("ghi_chu"),
-                maNguoiBaoCao,
-                rs.getString("ten_nguoi_bao_cao")
-        );
-    };
+            rs.getLong("ma_phieu_hao_hut"),
+            rs.getLong("ma_kho"),
+            rs.getString("ten_kho"),
+            rs.getLong("ma_nguyen_lieu"),
+            rs.getString("ten_nguyen_lieu"),
+            rs.getString("don_vi_tinh"),
+            maLoHang,
+            rs.getBigDecimal("so_luong_hao_hut"),
+            rs.getString("loai_hao_hut"),
+            ngayHaoHut,
+            rs.getString("ghi_chu"),
+            maNguoiBaoCao,
+            rs.getString("ten_nguoi_bao_cao"));
+      };
 
-    private final RowMapper<WastageLotResponse> lotMapper = (rs, rowNum) -> {
+  private final RowMapper<WastageLotResponse> lotMapper =
+      (rs, rowNum) -> {
         Date hsd = rs.getDate("han_su_dung");
         LocalDate hanSuDung = hsd == null ? null : hsd.toLocalDate();
 
         return new WastageLotResponse(
-                rs.getLong("ma_lo_hang"),
-                rs.getLong("ma_kho"),
-                rs.getString("ten_kho"),
-                rs.getLong("ma_nguyen_lieu"),
-                rs.getString("ten_nguyen_lieu"),
-                rs.getString("don_vi_tinh"),
-                rs.getBigDecimal("so_luong_con_lai"),
-                hanSuDung,
-                rs.getString("trang_thai")
-        );
-    };
+            rs.getLong("ma_lo_hang"),
+            rs.getLong("ma_kho"),
+            rs.getString("ten_kho"),
+            rs.getLong("ma_nguyen_lieu"),
+            rs.getString("ten_nguyen_lieu"),
+            rs.getString("don_vi_tinh"),
+            rs.getBigDecimal("so_luong_con_lai"),
+            hanSuDung,
+            rs.getString("trang_thai"));
+      };
 
-    public List<WastageResponse> searchWastages(
-            Long maKho,
-            Long maNguyenLieu,
-            String loaiHaoHut,
-            LocalDateTime fromDate,
-            LocalDateTime toDate,
-            String keyword
-    ) {
-        StringBuilder sql = new StringBuilder("""
+  public List<WastageResponse> searchWastages(
+      Long maKho,
+      Long maNguyenLieu,
+      String loaiHaoHut,
+      LocalDateTime fromDate,
+      LocalDateTime toDate,
+      String keyword) {
+    StringBuilder sql =
+        new StringBuilder(
+            """
                 SELECT
                     phh.ma_phieu_hao_hut,
                     phh.ma_kho,
@@ -108,35 +109,36 @@ public class WastageRepository {
                 WHERE 1 = 1
                 """);
 
-        List<Object> params = new ArrayList<>();
+    List<Object> params = new ArrayList<>();
 
-        if (maKho != null) {
-            sql.append(" AND phh.ma_kho = ? ");
-            params.add(maKho);
-        }
+    if (maKho != null) {
+      sql.append(" AND phh.ma_kho = ? ");
+      params.add(maKho);
+    }
 
-        if (maNguyenLieu != null) {
-            sql.append(" AND phh.ma_nguyen_lieu = ? ");
-            params.add(maNguyenLieu);
-        }
+    if (maNguyenLieu != null) {
+      sql.append(" AND phh.ma_nguyen_lieu = ? ");
+      params.add(maNguyenLieu);
+    }
 
-        if (loaiHaoHut != null && !loaiHaoHut.isBlank()) {
-            sql.append(" AND phh.loai_hao_hut = ? ");
-            params.add(loaiHaoHut);
-        }
+    if (loaiHaoHut != null && !loaiHaoHut.isBlank()) {
+      sql.append(" AND phh.loai_hao_hut = ? ");
+      params.add(loaiHaoHut);
+    }
 
-        if (fromDate != null) {
-            sql.append(" AND phh.ngay_hao_hut >= ? ");
-            params.add(Timestamp.valueOf(fromDate));
-        }
+    if (fromDate != null) {
+      sql.append(" AND phh.ngay_hao_hut >= ? ");
+      params.add(Timestamp.valueOf(fromDate));
+    }
 
-        if (toDate != null) {
-            sql.append(" AND phh.ngay_hao_hut <= ? ");
-            params.add(Timestamp.valueOf(toDate));
-        }
+    if (toDate != null) {
+      sql.append(" AND phh.ngay_hao_hut <= ? ");
+      params.add(Timestamp.valueOf(toDate));
+    }
 
-        if (keyword != null && !keyword.isBlank()) {
-            sql.append("""
+    if (keyword != null && !keyword.isBlank()) {
+      sql.append(
+          """
                     AND (
                         LOWER(k.ten_kho) LIKE ?
                         OR LOWER(nl.ten_nguyen_lieu) LIKE ?
@@ -146,21 +148,23 @@ public class WastageRepository {
                     )
                     """);
 
-            String like = "%" + keyword.trim().toLowerCase(Locale.ROOT) + "%";
-            params.add(like);
-            params.add(like);
-            params.add(like);
-            params.add(like);
-            params.add(like);
-        }
-
-        sql.append(" ORDER BY phh.ngay_hao_hut DESC, phh.ma_phieu_hao_hut DESC ");
-
-        return jdbcTemplate.query(sql.toString(), wastageMapper, params.toArray());
+      String like = "%" + keyword.trim().toLowerCase(Locale.ROOT) + "%";
+      params.add(like);
+      params.add(like);
+      params.add(like);
+      params.add(like);
+      params.add(like);
     }
 
-    public Optional<WastageResponse> findById(Long id, Long forcedMaKho) {
-        StringBuilder sql = new StringBuilder("""
+    sql.append(" ORDER BY phh.ngay_hao_hut DESC, phh.ma_phieu_hao_hut DESC ");
+
+    return jdbcTemplate.query(sql.toString(), wastageMapper, params.toArray());
+  }
+
+  public Optional<WastageResponse> findById(Long id, Long forcedMaKho) {
+    StringBuilder sql =
+        new StringBuilder(
+            """
                 SELECT
                     phh.ma_phieu_hao_hut,
                     phh.ma_kho,
@@ -183,20 +187,22 @@ public class WastageRepository {
                 WHERE phh.ma_phieu_hao_hut = ?
                 """);
 
-        List<Object> params = new ArrayList<>();
-        params.add(id);
+    List<Object> params = new ArrayList<>();
+    params.add(id);
 
-        if (forcedMaKho != null) {
-            sql.append(" AND phh.ma_kho = ? ");
-            params.add(forcedMaKho);
-        }
-
-        List<WastageResponse> rows = jdbcTemplate.query(sql.toString(), wastageMapper, params.toArray());
-        return rows.stream().findFirst();
+    if (forcedMaKho != null) {
+      sql.append(" AND phh.ma_kho = ? ");
+      params.add(forcedMaKho);
     }
 
-    public List<WastageLotResponse> findAvailableLots(Long maKho, Long maNguyenLieu) {
-        String sql = """
+    List<WastageResponse> rows =
+        jdbcTemplate.query(sql.toString(), wastageMapper, params.toArray());
+    return rows.stream().findFirst();
+  }
+
+  public List<WastageLotResponse> findAvailableLots(Long maKho, Long maNguyenLieu) {
+    String sql =
+        """
                 SELECT
                     lh.ma_lo_hang,
                     lh.ma_kho,
@@ -218,11 +224,12 @@ public class WastageRepository {
                 ORDER BY lh.han_su_dung NULLS LAST, lh.ma_lo_hang
                 """;
 
-        return jdbcTemplate.query(sql, lotMapper, maKho, maNguyenLieu);
-    }
+    return jdbcTemplate.query(sql, lotMapper, maKho, maNguyenLieu);
+  }
 
-    public LotLock findLotForUpdate(Long maLoHang) {
-        String sql = """
+  public LotLock findLotForUpdate(Long maLoHang) {
+    String sql =
+        """
                 SELECT
                     ma_lo_hang,
                     ma_kho,
@@ -235,25 +242,29 @@ public class WastageRepository {
                 FOR UPDATE
                 """;
 
-        List<LotLock> rows = jdbcTemplate.query(sql, (rs, rowNum) -> {
-            Date hsd = rs.getDate("han_su_dung");
-            LocalDate hanSuDung = hsd == null ? null : hsd.toLocalDate();
+    List<LotLock> rows =
+        jdbcTemplate.query(
+            sql,
+            (rs, rowNum) -> {
+              Date hsd = rs.getDate("han_su_dung");
+              LocalDate hanSuDung = hsd == null ? null : hsd.toLocalDate();
 
-            return new LotLock(
-                    rs.getLong("ma_lo_hang"),
-                    rs.getLong("ma_kho"),
-                    rs.getLong("ma_nguyen_lieu"),
-                    rs.getBigDecimal("so_luong_con_lai"),
-                    rs.getString("trang_thai"),
-                    hanSuDung
-            );
-        }, maLoHang);
+              return new LotLock(
+                  rs.getLong("ma_lo_hang"),
+                  rs.getLong("ma_kho"),
+                  rs.getLong("ma_nguyen_lieu"),
+                  rs.getBigDecimal("so_luong_con_lai"),
+                  rs.getString("trang_thai"),
+                  hanSuDung);
+            },
+            maLoHang);
 
-        return rows.isEmpty() ? null : rows.get(0);
-    }
+    return rows.isEmpty() ? null : rows.get(0);
+  }
 
-    public StockLock findStockForUpdate(Long maKho, Long maNguyenLieu) {
-        String sql = """
+  public StockLock findStockForUpdate(Long maKho, Long maNguyenLieu) {
+    String sql =
+        """
                 SELECT
                     ma_ton_kho,
                     ma_kho,
@@ -265,40 +276,45 @@ public class WastageRepository {
                 FOR UPDATE
                 """;
 
-        List<StockLock> rows = jdbcTemplate.query(sql, (rs, rowNum) -> new StockLock(
-                rs.getLong("ma_ton_kho"),
-                rs.getLong("ma_kho"),
-                rs.getLong("ma_nguyen_lieu"),
-                rs.getBigDecimal("so_luong_ton")
-        ), maKho, maNguyenLieu);
+    List<StockLock> rows =
+        jdbcTemplate.query(
+            sql,
+            (rs, rowNum) ->
+                new StockLock(
+                    rs.getLong("ma_ton_kho"),
+                    rs.getLong("ma_kho"),
+                    rs.getLong("ma_nguyen_lieu"),
+                    rs.getBigDecimal("so_luong_ton")),
+            maKho,
+            maNguyenLieu);
 
-        return rows.isEmpty() ? null : rows.get(0);
-    }
+    return rows.isEmpty() ? null : rows.get(0);
+  }
 
-    public Long insertWastage(
-            Long maKho,
-            Long maNguyenLieu,
-            Long maLoHang,
-            BigDecimal soLuongHaoHut,
-            String loaiHaoHut,
-            String ghiChu,
-            Long nguoiBaoCao
-    ) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("ma_kho", maKho);
-        params.put("ma_nguyen_lieu", maNguyenLieu);
-        params.put("ma_lo_hang", maLoHang);
-        params.put("so_luong_hao_hut", soLuongHaoHut);
-        params.put("loai_hao_hut", loaiHaoHut);
-        params.put("ghi_chu", ghiChu);
-        params.put("nguoi_bao_cao", nguoiBaoCao);
+  public Long insertWastage(
+      Long maKho,
+      Long maNguyenLieu,
+      Long maLoHang,
+      BigDecimal soLuongHaoHut,
+      String loaiHaoHut,
+      String ghiChu,
+      Long nguoiBaoCao) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("ma_kho", maKho);
+    params.put("ma_nguyen_lieu", maNguyenLieu);
+    params.put("ma_lo_hang", maLoHang);
+    params.put("so_luong_hao_hut", soLuongHaoHut);
+    params.put("loai_hao_hut", loaiHaoHut);
+    params.put("ghi_chu", ghiChu);
+    params.put("nguoi_bao_cao", nguoiBaoCao);
 
-        Number key = wastageInsert.executeAndReturnKey(params);
-        return key.longValue();
-    }
+    Number key = wastageInsert.executeAndReturnKey(params);
+    return key.longValue();
+  }
 
-    public void updateLotAfterWastage(Long maLoHang, BigDecimal newQuantity) {
-        String sql = """
+  public void updateLotAfterWastage(Long maLoHang, BigDecimal newQuantity) {
+    String sql =
+        """
                 UPDATE LOHANG_NGUYENLIEU
                 SET so_luong_con_lai = ?,
                     trang_thai = CASE
@@ -309,30 +325,31 @@ public class WastageRepository {
                 WHERE ma_lo_hang = ?
                 """;
 
-        jdbcTemplate.update(sql, newQuantity, newQuantity, maLoHang);
-    }
+    jdbcTemplate.update(sql, newQuantity, newQuantity, maLoHang);
+  }
 
-    public void updateStockAfterWastage(Long maTonKho, BigDecimal newQuantity) {
-        String sql = """
+  public void updateStockAfterWastage(Long maTonKho, BigDecimal newQuantity) {
+    String sql =
+        """
                 UPDATE TONKHO
                 SET so_luong_ton = ?
                 WHERE ma_ton_kho = ?
                 """;
 
-        jdbcTemplate.update(sql, newQuantity, maTonKho);
-    }
+    jdbcTemplate.update(sql, newQuantity, maTonKho);
+  }
 
-    public void insertInventoryLog(
-            Long maKho,
-            Long maNguyenLieu,
-            Long maLoHang,
-            Long maChungTu,
-            BigDecimal soLuongThayDoi,
-            BigDecimal soLuongTruoc,
-            BigDecimal soLuongSau,
-            Long nguoiThaoTac
-    ) {
-        String sql = """
+  public void insertInventoryLog(
+      Long maKho,
+      Long maNguyenLieu,
+      Long maLoHang,
+      Long maChungTu,
+      BigDecimal soLuongThayDoi,
+      BigDecimal soLuongTruoc,
+      BigDecimal soLuongSau,
+      Long nguoiThaoTac) {
+    String sql =
+        """
                 INSERT INTO NHATKY_KHO (
                     ma_kho,
                     ma_nguyen_lieu,
@@ -348,21 +365,22 @@ public class WastageRepository {
                 VALUES (?, ?, ?, 'WASTAGE', 'PHIEUHAOHUT', ?, ?, ?, ?, ?)
                 """;
 
-        jdbcTemplate.update(
-                sql,
-                maKho,
-                maNguyenLieu,
-                maLoHang,
-                maChungTu,
-                soLuongThayDoi,
-                soLuongTruoc,
-                soLuongSau,
-                nguoiThaoTac
-        );
-    }
+    jdbcTemplate.update(
+        sql,
+        maKho,
+        maNguyenLieu,
+        maLoHang,
+        maChungTu,
+        soLuongThayDoi,
+        soLuongTruoc,
+        soLuongSau,
+        nguoiThaoTac);
+  }
 
-    public List<WastageLookupResponse.OptionDto> findWarehouseOptions(Long forcedMaKho) {
-        StringBuilder sql = new StringBuilder("""
+  public List<WastageLookupResponse.OptionDto> findWarehouseOptions(Long forcedMaKho) {
+    StringBuilder sql =
+        new StringBuilder(
+            """
                 SELECT
                     ma_kho AS id,
                     loai_kho AS code,
@@ -372,25 +390,29 @@ public class WastageRepository {
                 WHERE trang_thai = 'ACTIVE'
                 """);
 
-        List<Object> params = new ArrayList<>();
+    List<Object> params = new ArrayList<>();
 
-        if (forcedMaKho != null) {
-            sql.append(" AND ma_kho = ? ");
-            params.add(forcedMaKho);
-        }
+    if (forcedMaKho != null) {
+      sql.append(" AND ma_kho = ? ");
+      params.add(forcedMaKho);
+    }
 
-        sql.append(" ORDER BY ten_kho ");
+    sql.append(" ORDER BY ten_kho ");
 
-        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> new WastageLookupResponse.OptionDto(
+    return jdbcTemplate.query(
+        sql.toString(),
+        (rs, rowNum) ->
+            new WastageLookupResponse.OptionDto(
                 rs.getLong("id"),
                 rs.getString("code"),
                 rs.getString("name"),
-                rs.getString("description")
-        ), params.toArray());
-    }
+                rs.getString("description")),
+        params.toArray());
+  }
 
-    public List<WastageLookupResponse.OptionDto> findIngredientOptions() {
-        String sql = """
+  public List<WastageLookupResponse.OptionDto> findIngredientOptions() {
+    String sql =
+        """
                 SELECT
                     nl.ma_nguyen_lieu AS id,
                     nl.trang_thai AS code,
@@ -402,102 +424,104 @@ public class WastageRepository {
                 ORDER BY nl.ten_nguyen_lieu
                 """;
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> new WastageLookupResponse.OptionDto(
+    return jdbcTemplate.query(
+        sql,
+        (rs, rowNum) ->
+            new WastageLookupResponse.OptionDto(
                 rs.getLong("id"),
                 rs.getString("code"),
                 rs.getString("name"),
-                rs.getString("description")
-        ));
-    }
+                rs.getString("description")));
+  }
 
-    public Long findActiveWarehouseIdByBranchId(Long maChiNhanh) {
-        String sql = """
+  public Long findActiveWarehouseIdByBranchId(Long maChiNhanh) {
+    String sql =
+        """
                 SELECT ma_kho
                 FROM KHO
                 WHERE ma_chi_nhanh = ?
                   AND trang_thai = 'ACTIVE'
                 """;
 
-        List<Long> rows = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("ma_kho"), maChiNhanh);
-        return rows.isEmpty() ? null : rows.get(0);
+    List<Long> rows = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("ma_kho"), maChiNhanh);
+    return rows.isEmpty() ? null : rows.get(0);
+  }
+
+  public static class LotLock {
+    private final Long maLoHang;
+    private final Long maKho;
+    private final Long maNguyenLieu;
+    private final BigDecimal soLuongConLai;
+    private final String trangThai;
+    private final LocalDate hanSuDung;
+
+    public LotLock(
+        Long maLoHang,
+        Long maKho,
+        Long maNguyenLieu,
+        BigDecimal soLuongConLai,
+        String trangThai,
+        LocalDate hanSuDung) {
+      this.maLoHang = maLoHang;
+      this.maKho = maKho;
+      this.maNguyenLieu = maNguyenLieu;
+      this.soLuongConLai = soLuongConLai;
+      this.trangThai = trangThai;
+      this.hanSuDung = hanSuDung;
     }
 
-    public static class LotLock {
-        private final Long maLoHang;
-        private final Long maKho;
-        private final Long maNguyenLieu;
-        private final BigDecimal soLuongConLai;
-        private final String trangThai;
-        private final LocalDate hanSuDung;
-
-        public LotLock(
-                Long maLoHang,
-                Long maKho,
-                Long maNguyenLieu,
-                BigDecimal soLuongConLai,
-                String trangThai,
-                LocalDate hanSuDung
-        ) {
-            this.maLoHang = maLoHang;
-            this.maKho = maKho;
-            this.maNguyenLieu = maNguyenLieu;
-            this.soLuongConLai = soLuongConLai;
-            this.trangThai = trangThai;
-            this.hanSuDung = hanSuDung;
-        }
-
-        public Long getMaLoHang() {
-            return maLoHang;
-        }
-
-        public Long getMaKho() {
-            return maKho;
-        }
-
-        public Long getMaNguyenLieu() {
-            return maNguyenLieu;
-        }
-
-        public BigDecimal getSoLuongConLai() {
-            return soLuongConLai;
-        }
-
-        public String getTrangThai() {
-            return trangThai;
-        }
-
-        public LocalDate getHanSuDung() {
-            return hanSuDung;
-        }
+    public Long getMaLoHang() {
+      return maLoHang;
     }
 
-    public static class StockLock {
-        private final Long maTonKho;
-        private final Long maKho;
-        private final Long maNguyenLieu;
-        private final BigDecimal soLuongTon;
-
-        public StockLock(Long maTonKho, Long maKho, Long maNguyenLieu, BigDecimal soLuongTon) {
-            this.maTonKho = maTonKho;
-            this.maKho = maKho;
-            this.maNguyenLieu = maNguyenLieu;
-            this.soLuongTon = soLuongTon;
-        }
-
-        public Long getMaTonKho() {
-            return maTonKho;
-        }
-
-        public Long getMaKho() {
-            return maKho;
-        }
-
-        public Long getMaNguyenLieu() {
-            return maNguyenLieu;
-        }
-
-        public BigDecimal getSoLuongTon() {
-            return soLuongTon;
-        }
+    public Long getMaKho() {
+      return maKho;
     }
+
+    public Long getMaNguyenLieu() {
+      return maNguyenLieu;
+    }
+
+    public BigDecimal getSoLuongConLai() {
+      return soLuongConLai;
+    }
+
+    public String getTrangThai() {
+      return trangThai;
+    }
+
+    public LocalDate getHanSuDung() {
+      return hanSuDung;
+    }
+  }
+
+  public static class StockLock {
+    private final Long maTonKho;
+    private final Long maKho;
+    private final Long maNguyenLieu;
+    private final BigDecimal soLuongTon;
+
+    public StockLock(Long maTonKho, Long maKho, Long maNguyenLieu, BigDecimal soLuongTon) {
+      this.maTonKho = maTonKho;
+      this.maKho = maKho;
+      this.maNguyenLieu = maNguyenLieu;
+      this.soLuongTon = soLuongTon;
+    }
+
+    public Long getMaTonKho() {
+      return maTonKho;
+    }
+
+    public Long getMaKho() {
+      return maKho;
+    }
+
+    public Long getMaNguyenLieu() {
+      return maNguyenLieu;
+    }
+
+    public BigDecimal getSoLuongTon() {
+      return soLuongTon;
+    }
+  }
 }

@@ -2,36 +2,40 @@ package com.coffeechain.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "DTO request CreateBranchRequest. Swagger hien thi cac field frontend can gui len backend.")
+@Schema(
+    description =
+        "DTO request CreateBranchRequest. Swagger hien thi cac field frontend can gui len backend.")
 public class CreateBranchRequest {
-    @Schema(description = "Ten chi nhanh hien thi tren giao dien", example = "Tên hiển thị mẫu")
-    private String tenChiNhanh;
-    @Schema(description = "Dia chi lien he/hoat dong", example = "Gia tri mau")
-    private String diaChi;
-    @Schema(description = "So dien thoai lien he", example = "Gia tri mau")
-    private String soDienThoai;
+  @Schema(description = "Ten chi nhanh hien thi tren giao dien", example = "Tên hiển thị mẫu")
+  private String tenChiNhanh;
 
-    public String getTenChiNhanh() {
-        return tenChiNhanh;
-    }
+  @Schema(description = "Dia chi lien he/hoat dong", example = "Gia tri mau")
+  private String diaChi;
 
-    public void setTenChiNhanh(String tenChiNhanh) {
-        this.tenChiNhanh = tenChiNhanh;
-    }
+  @Schema(description = "So dien thoai lien he", example = "Gia tri mau")
+  private String soDienThoai;
 
-    public String getDiaChi() {
-        return diaChi;
-    }
+  public String getTenChiNhanh() {
+    return tenChiNhanh;
+  }
 
-    public void setDiaChi(String diaChi) {
-        this.diaChi = diaChi;
-    }
+  public void setTenChiNhanh(String tenChiNhanh) {
+    this.tenChiNhanh = tenChiNhanh;
+  }
 
-    public String getSoDienThoai() {
-        return soDienThoai;
-    }
+  public String getDiaChi() {
+    return diaChi;
+  }
 
-    public void setSoDienThoai(String soDienThoai) {
-        this.soDienThoai = soDienThoai;
-    }
+  public void setDiaChi(String diaChi) {
+    this.diaChi = diaChi;
+  }
+
+  public String getSoDienThoai() {
+    return soDienThoai;
+  }
+
+  public void setSoDienThoai(String soDienThoai) {
+    this.soDienThoai = soDienThoai;
+  }
 }

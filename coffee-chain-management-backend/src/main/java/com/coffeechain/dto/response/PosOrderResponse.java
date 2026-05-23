@@ -5,17 +5,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record PosOrderResponse(
-        Long maHoaDon,
-        Long maChiNhanh,
-        Long maPos,
-        Long maNguoiDung,
-        String trangThaiHoaDon,
-        String trangThaiThanhToan,
-        String phuongThucThanhToan,
-        BigDecimal tongThanhToan,
-        LocalDateTime thoiGianTaoHoaDon,
-        LocalDateTime thoiGianThanhToan,
-        List<PosOrderItemResponse> items,
-        PosPaymentResponse payment
-) {
-}
+    Long maHoaDon,
+    Long maChiNhanh,
+    Long maPos,
+    Long maNguoiDung,
+    String trangThaiHoaDon,
+    String trangThaiThanhToan,
+    String phuongThucThanhToan,
+    BigDecimal tongThanhToan,
+    LocalDateTime thoiGianTaoHoaDon,
+    LocalDateTime thoiGianThanhToan,
+    List<PosOrderItemResponse> items,
+    PosPaymentResponse payment) {}

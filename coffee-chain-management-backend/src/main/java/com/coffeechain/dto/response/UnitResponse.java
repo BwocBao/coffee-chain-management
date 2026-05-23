@@ -2,45 +2,48 @@ package com.coffeechain.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "DTO response UnitResponse. Swagger hien thi cac field backend tra ve cho frontend.")
+@Schema(
+    description =
+        "DTO response UnitResponse. Swagger hien thi cac field backend tra ve cho frontend.")
 public class UnitResponse {
-    @Schema(description = "Ma don vi tinh", example = "1")
-    private Long maDonViTinh;
-    @Schema(description = "Ten don vi tinh", example = "Tên hiển thị mẫu")
-    private String tenDonViTinh;
-    @Schema(description = "Ky hieu don vi tinh", example = "Gia tri mau")
-    private String kyHieu;
+  @Schema(description = "Ma don vi tinh", example = "1")
+  private Long maDonViTinh;
 
-    public UnitResponse() {
-    }
+  @Schema(description = "Ten don vi tinh", example = "Tên hiển thị mẫu")
+  private String tenDonViTinh;
 
-    public UnitResponse(Long maDonViTinh, String tenDonViTinh, String kyHieu) {
-        this.maDonViTinh = maDonViTinh;
-        this.tenDonViTinh = tenDonViTinh;
-        this.kyHieu = kyHieu;
-    }
+  @Schema(description = "Ky hieu don vi tinh", example = "Gia tri mau")
+  private String kyHieu;
 
-    public Long getMaDonViTinh() {
-        return maDonViTinh;
-    }
+  public UnitResponse() {}
 
-    public void setMaDonViTinh(Long maDonViTinh) {
-        this.maDonViTinh = maDonViTinh;
-    }
+  public UnitResponse(Long maDonViTinh, String tenDonViTinh, String kyHieu) {
+    this.maDonViTinh = maDonViTinh;
+    this.tenDonViTinh = tenDonViTinh;
+    this.kyHieu = kyHieu;
+  }
 
-    public String getTenDonViTinh() {
-        return tenDonViTinh;
-    }
+  public Long getMaDonViTinh() {
+    return maDonViTinh;
+  }
 
-    public void setTenDonViTinh(String tenDonViTinh) {
-        this.tenDonViTinh = tenDonViTinh;
-    }
+  public void setMaDonViTinh(Long maDonViTinh) {
+    this.maDonViTinh = maDonViTinh;
+  }
 
-    public String getKyHieu() {
-        return kyHieu;
-    }
+  public String getTenDonViTinh() {
+    return tenDonViTinh;
+  }
 
-    public void setKyHieu(String kyHieu) {
-        this.kyHieu = kyHieu;
-    }
+  public void setTenDonViTinh(String tenDonViTinh) {
+    this.tenDonViTinh = tenDonViTinh;
+  }
+
+  public String getKyHieu() {
+    return kyHieu;
+  }
+
+  public void setKyHieu(String kyHieu) {
+    this.kyHieu = kyHieu;
+  }
 }

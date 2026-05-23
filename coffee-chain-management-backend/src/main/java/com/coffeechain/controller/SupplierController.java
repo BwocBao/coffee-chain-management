@@ -1,7 +1,5 @@
 package com.coffeechain.controller;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
-
 import com.coffeechain.dto.BaseResponse;
 import com.coffeechain.dto.request.CreateSupplierRequest;
 import com.coffeechain.dto.request.UpdateSupplierRequest;
@@ -13,109 +11,104 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-@Tag(name = "Quan ly nha cung cap", description = "Nhom API Quan ly nha cung cap. Swagger mo ta quyen can co, request, response va luong su dung chinh.")
+@Tag(
+    name = "Quan ly nha cung cap",
+    description =
+        "Nhom API Quan ly nha cung cap. Swagger mo ta quyen can co, request, response va luong su dung chinh.")
 @RestController
 @RequestMapping("/api/suppliers")
 public class SupplierController {
-    private final SupplierService supplierService;
-    private final AuthGuard authGuard;
+  private final SupplierService supplierService;
+  private final AuthGuard authGuard;
 
-    public SupplierController(SupplierService supplierService, AuthGuard authGuard) {
-        this.supplierService = supplierService;
-        this.authGuard = authGuard;
-    }
+  public SupplierController(SupplierService supplierService, AuthGuard authGuard) {
+    this.supplierService = supplierService;
+    this.authGuard = authGuard;
+  }
 
-    @Operation(
-            summary = "Lấy danh sách nhà cung cấp",
-            description = "Tìm kiếm nhà cung cấp theo tên, số điện thoại, email hoặc địa chỉ."
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công"),
-            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token hết hạn", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Không có quyền xem nhà cung cấp", content = @Content)
-    })
-    @GetMapping
-    public ResponseEntity<BaseResponse<List<SupplierResponse>>> searchSuppliers(
-            @Parameter(hidden = true)
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "keyword", required = false) String keyword
-    ) {
-        authGuard.requirePermission(authHeader, "SUPPLIER:VIEW");
+  @Operation(
+      summary = "Lấy danh sách nhà cung cấp",
+      description = "Tìm kiếm nhà cung cấp theo tên, số điện thoại, email hoặc địa chỉ.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công"),
+    @ApiResponse(
+        responseCode = "401",
+        description = "Chưa đăng nhập hoặc token hết hạn",
+        content = @Content),
+    @ApiResponse(
+        responseCode = "403",
+        description = "Không có quyền xem nhà cung cấp",
+        content = @Content)
+  })
+  @GetMapping
+  public ResponseEntity<BaseResponse<List<SupplierResponse>>> searchSuppliers(
+      @Parameter(hidden = true) @RequestHeader(value = "Authorization", required = false)
+          String authHeader,
+      @RequestParam(value = "keyword", required = false) String keyword) {
+    authGuard.requirePermission(authHeader, "SUPPLIER:VIEW");
 
-        return ResponseEntity.ok(BaseResponse.ok(
-                "Lấy danh sách nhà cung cấp thành công",
-                supplierService.searchSuppliers(keyword)
-        ));
-    }
+    return ResponseEntity.ok(
+        BaseResponse.ok(
+            "Lấy danh sách nhà cung cấp thành công", supplierService.searchSuppliers(keyword)));
+  }
 
-    @Operation(summary = "Lấy chi tiết nhà cung cấp")
-    @GetMapping("/{id}")
-    public ResponseEntity<BaseResponse<SupplierResponse>> getSupplierById(
-            @Parameter(hidden = true)
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @PathVariable Long id
-    ) {
-        authGuard.requirePermission(authHeader, "SUPPLIER:VIEW");
+  @Operation(summary = "Lấy chi tiết nhà cung cấp")
+  @GetMapping("/{id}")
+  public ResponseEntity<BaseResponse<SupplierResponse>> getSupplierById(
+      @Parameter(hidden = true) @RequestHeader(value = "Authorization", required = false)
+          String authHeader,
+      @PathVariable Long id) {
+    authGuard.requirePermission(authHeader, "SUPPLIER:VIEW");
 
-        return ResponseEntity.ok(BaseResponse.ok(
-                "Lấy chi tiết nhà cung cấp thành công",
-                supplierService.getSupplierById(id)
-        ));
-    }
+    return ResponseEntity.ok(
+        BaseResponse.ok(
+            "Lấy chi tiết nhà cung cấp thành công", supplierService.getSupplierById(id)));
+  }
 
-    @Operation(summary = "Tạo nhà cung cấp")
-    @PostMapping
-    public ResponseEntity<BaseResponse<SupplierResponse>> createSupplier(
-            @Parameter(hidden = true)
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestBody CreateSupplierRequest request
-    ) {
-        authGuard.requirePermission(authHeader, "SUPPLIER:CREATE");
+  @Operation(summary = "Tạo nhà cung cấp")
+  @PostMapping
+  public ResponseEntity<BaseResponse<SupplierResponse>> createSupplier(
+      @Parameter(hidden = true) @RequestHeader(value = "Authorization", required = false)
+          String authHeader,
+      @RequestBody CreateSupplierRequest request) {
+    authGuard.requirePermission(authHeader, "SUPPLIER:CREATE");
 
-        return ResponseEntity.ok(BaseResponse.created(
-                "Tạo nhà cung cấp thành công",
-                supplierService.createSupplier(request)
-        ));
-    }
+    return ResponseEntity.ok(
+        BaseResponse.created(
+            "Tạo nhà cung cấp thành công", supplierService.createSupplier(request)));
+  }
 
-    @Operation(summary = "Cập nhật nhà cung cấp")
-    @PutMapping("/{id}")
-    public ResponseEntity<BaseResponse<SupplierResponse>> updateSupplier(
-            @Parameter(hidden = true)
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @PathVariable Long id,
-            @RequestBody UpdateSupplierRequest request
-    ) {
-        authGuard.requirePermission(authHeader, "SUPPLIER:UPDATE");
+  @Operation(summary = "Cập nhật nhà cung cấp")
+  @PutMapping("/{id}")
+  public ResponseEntity<BaseResponse<SupplierResponse>> updateSupplier(
+      @Parameter(hidden = true) @RequestHeader(value = "Authorization", required = false)
+          String authHeader,
+      @PathVariable Long id,
+      @RequestBody UpdateSupplierRequest request) {
+    authGuard.requirePermission(authHeader, "SUPPLIER:UPDATE");
 
-        return ResponseEntity.ok(BaseResponse.ok(
-                "Cập nhật nhà cung cấp thành công",
-                supplierService.updateSupplier(id, request)
-        ));
-    }
+    return ResponseEntity.ok(
+        BaseResponse.ok(
+            "Cập nhật nhà cung cấp thành công", supplierService.updateSupplier(id, request)));
+  }
 
-    @Operation(
-            summary = "Xóa nhà cung cấp",
-            description = "Chỉ xóa được nhà cung cấp chưa phát sinh phiếu nhập."
-    )
-    @DeleteMapping("/{id}")
-    public ResponseEntity<BaseResponse<Void>> deleteSupplier(
-            @Parameter(hidden = true)
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @PathVariable Long id
-    ) {
-        authGuard.requirePermission(authHeader, "SUPPLIER:DELETE");
+  @Operation(
+      summary = "Xóa nhà cung cấp",
+      description = "Chỉ xóa được nhà cung cấp chưa phát sinh phiếu nhập.")
+  @DeleteMapping("/{id}")
+  public ResponseEntity<BaseResponse<Void>> deleteSupplier(
+      @Parameter(hidden = true) @RequestHeader(value = "Authorization", required = false)
+          String authHeader,
+      @PathVariable Long id) {
+    authGuard.requirePermission(authHeader, "SUPPLIER:DELETE");
 
-        supplierService.deleteSupplier(id);
+    supplierService.deleteSupplier(id);
 
-        return ResponseEntity.ok(BaseResponse.ok(
-                "Xóa nhà cung cấp thành công",
-                null
-        ));
-    }
+    return ResponseEntity.ok(BaseResponse.ok("Xóa nhà cung cấp thành công", null));
+  }
 }
