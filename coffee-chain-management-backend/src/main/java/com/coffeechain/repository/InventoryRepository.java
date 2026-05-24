@@ -149,6 +149,7 @@ public class InventoryRepository {
                        nl.ten_nguyen_lieu,
                        COALESCE(dvt.ky_hieu, '-') AS don_vi_tinh,
                        lh.so_luong_con_lai,
+                       NVL(cpn.don_gia_nhap, 0) AS don_gia_nhap,
                        lh.han_su_dung,
                        lh.ngay_tao
                 FROM LOHANG_NGUYENLIEU lh
@@ -173,6 +174,7 @@ public class InventoryRepository {
           response.setTenNguyenLieu(rs.getString("ten_nguyen_lieu"));
           response.setDonViTinh(rs.getString("don_vi_tinh"));
           response.setSoLuongConLai(rs.getBigDecimal("so_luong_con_lai"));
+          response.setDonGiaNhap(rs.getBigDecimal("don_gia_nhap"));
           Date hanSuDung = rs.getDate("han_su_dung");
           response.setHanSuDung(hanSuDung == null ? null : hanSuDung.toLocalDate());
           response.setNgayTao(toLocalDateTime(rs.getTimestamp("ngay_tao")));
@@ -185,17 +187,19 @@ public class InventoryRepository {
   public List<LotRecord> lockLotsForExport(Long maKho, Long maNguyenLieu) {
     return jdbcTemplate.query(
         """
-                SELECT ma_lo_hang, ma_kho, ma_nguyen_lieu, so_luong_con_lai, han_su_dung, ngay_tao
-                FROM LOHANG_NGUYENLIEU
-                WHERE ma_kho = ?
-                  AND ma_nguyen_lieu = ?
-                  AND trang_thai = 'ACTIVE'
-                  AND so_luong_con_lai > 0
+                SELECT lh.ma_lo_hang, lh.ma_kho, lh.ma_nguyen_lieu, lh.so_luong_con_lai,
+                       NVL(cpn.don_gia_nhap, 0) AS don_gia_nhap, lh.han_su_dung, lh.ngay_tao
+                FROM LOHANG_NGUYENLIEU lh
+                LEFT JOIN CHITIETPHIEUNHAP cpn ON cpn.ma_ct_phieu_nhap = lh.ma_ct_phieu_nhap
+                WHERE lh.ma_kho = ?
+                  AND lh.ma_nguyen_lieu = ?
+                  AND lh.trang_thai = 'ACTIVE'
+                  AND lh.so_luong_con_lai > 0
                 ORDER BY
-                  CASE WHEN han_su_dung IS NULL THEN 1 ELSE 0 END,
-                  han_su_dung ASC,
-                  ngay_tao ASC,
-                  ma_lo_hang ASC
+                  CASE WHEN lh.han_su_dung IS NULL THEN 1 ELSE 0 END,
+                  lh.han_su_dung ASC,
+                  lh.ngay_tao ASC,
+                  lh.ma_lo_hang ASC
                 FOR UPDATE
                 """,
         (rs, rowNum) -> mapLotRecord(rs),
@@ -207,13 +211,15 @@ public class InventoryRepository {
     List<LotRecord> rows =
         jdbcTemplate.query(
             """
-                SELECT ma_lo_hang, ma_kho, ma_nguyen_lieu, so_luong_con_lai, han_su_dung, ngay_tao
-                FROM LOHANG_NGUYENLIEU
-                WHERE ma_lo_hang = ?
-                  AND ma_kho = ?
-                  AND ma_nguyen_lieu = ?
-                  AND trang_thai = 'ACTIVE'
-                  AND so_luong_con_lai > 0
+                SELECT lh.ma_lo_hang, lh.ma_kho, lh.ma_nguyen_lieu, lh.so_luong_con_lai,
+                       NVL(cpn.don_gia_nhap, 0) AS don_gia_nhap, lh.han_su_dung, lh.ngay_tao
+                FROM LOHANG_NGUYENLIEU lh
+                LEFT JOIN CHITIETPHIEUNHAP cpn ON cpn.ma_ct_phieu_nhap = lh.ma_ct_phieu_nhap
+                WHERE lh.ma_lo_hang = ?
+                  AND lh.ma_kho = ?
+                  AND lh.ma_nguyen_lieu = ?
+                  AND lh.trang_thai = 'ACTIVE'
+                  AND lh.so_luong_con_lai > 0
                 FOR UPDATE
                 """,
             (rs, rowNum) -> mapLotRecord(rs),
@@ -830,6 +836,7 @@ public class InventoryRepository {
         rs.getLong("ma_kho"),
         rs.getLong("ma_nguyen_lieu"),
         rs.getBigDecimal("so_luong_con_lai"),
+        rs.getBigDecimal("don_gia_nhap"),
         hanSuDung == null ? null : hanSuDung.toLocalDate(),
         ngayTao == null ? null : ngayTao.toLocalDateTime());
   }
@@ -863,6 +870,7 @@ public class InventoryRepository {
       Long maKho,
       Long maNguyenLieu,
       BigDecimal soLuongConLai,
+      BigDecimal donGiaNhap,
       LocalDate hanSuDung,
       LocalDateTime ngayTao) {}
 

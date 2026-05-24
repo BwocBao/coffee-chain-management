@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -617,16 +616,24 @@ public class QuanLyCongThucFrame extends JFrame {
       return;
     }
 
-    JFileChooser chooser = new JFileChooser();
-    chooser.setDialogTitle("Chọn hình ảnh sản phẩm");
-    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-    chooser.setFileFilter(
-        new FileNameExtensionFilter("Hình ảnh", "jpg", "jpeg", "png", "webp", "gif"));
-    if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+    FileDialog dialog = new FileDialog(this, "Ch?n h?nh ?nh s?n ph?m", FileDialog.LOAD);
+    dialog.setFilenameFilter(
+        (dir, name) -> {
+          String lower = name == null ? "" : name.toLowerCase();
+          return lower.endsWith(".jpg")
+              || lower.endsWith(".jpeg")
+              || lower.endsWith(".png")
+              || lower.endsWith(".webp")
+              || lower.endsWith(".gif");
+        });
+    dialog.setVisible(true);
+
+    java.io.File[] files = dialog.getFiles();
+    if (files == null || files.length == 0) {
       return;
     }
 
-    Path imagePath = chooser.getSelectedFile().toPath();
+    Path imagePath = files[0].toPath();
     imagePreview.setLoading(true);
     setButtonsEnabled(false);
     showStatus("Đang upload hình ảnh...", false);

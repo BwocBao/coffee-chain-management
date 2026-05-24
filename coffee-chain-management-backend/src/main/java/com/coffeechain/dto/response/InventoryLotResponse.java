@@ -25,6 +25,9 @@ public class InventoryLotResponse {
   @Schema(description = "So luong con lai", example = "27000")
   private BigDecimal soLuongConLai;
 
+  @Schema(description = "Don gia nhap cua lo, dung de tinh don gia xuat tu dong", example = "95")
+  private BigDecimal donGiaNhap;
+
   @Schema(description = "Han su dung cua lo")
   private LocalDate hanSuDung;
 
@@ -77,6 +80,14 @@ public class InventoryLotResponse {
 
   public void setSoLuongConLai(BigDecimal soLuongConLai) {
     this.soLuongConLai = soLuongConLai;
+  }
+
+  public BigDecimal getDonGiaNhap() {
+    return donGiaNhap;
+  }
+
+  public void setDonGiaNhap(BigDecimal donGiaNhap) {
+    this.donGiaNhap = donGiaNhap;
   }
 
   public LocalDate getHanSuDung() {

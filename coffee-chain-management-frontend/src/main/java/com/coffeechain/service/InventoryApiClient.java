@@ -1048,6 +1048,9 @@ public class InventoryApiClient extends ApiClientSupport {
     @JsonAlias({"soLuongConLai", "quantity", "remainingQuantity"})
     private BigDecimal soLuongConLai;
 
+    @JsonAlias({"donGiaNhap", "unitCost", "importUnitPrice"})
+    private BigDecimal donGiaNhap;
+
     /*
      * Để String cho dễ parse.
      * Tránh lỗi nếu backend trả DATE/TIMESTAMP ở format khác nhau.
@@ -1096,6 +1099,14 @@ public class InventoryApiClient extends ApiClientSupport {
 
     public void setSoLuongConLai(BigDecimal soLuongConLai) {
       this.soLuongConLai = soLuongConLai;
+    }
+
+    public BigDecimal getDonGiaNhap() {
+      return donGiaNhap;
+    }
+
+    public void setDonGiaNhap(BigDecimal donGiaNhap) {
+      this.donGiaNhap = donGiaNhap;
     }
 
     public String getHanSuDung() {

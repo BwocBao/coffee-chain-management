@@ -8,6 +8,8 @@ import com.coffeechain.repository.PosRepository.OrderRow;
 import com.coffeechain.repository.PosRepository.PayOsPaymentRow;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -107,65 +109,92 @@ public class PayOsPaymentService {
     }
   }
 
-  @Transactional(rollbackFor = Exception.class)
-  public PayOsWebhookResponse handleWebhook(String rawBody) {
-    ensurePayOsConfigured();
+    @Transactional(rollbackFor = Exception.class)
+    public PayOsWebhookResponse handleWebhook(String rawBody) {
+        ensurePayOsConfigured();
 
-    Webhook webhook;
-    WebhookData data;
-    try {
-      webhook = objectMapper.readValue(rawBody, Webhook.class);
-      data = new PayOS(clientId, apiKey, checksumKey).webhooks().verify(webhook);
-    } catch (Exception ex) {
-      throw new AppException(
-          HttpStatus.BAD_REQUEST, "Webhook payOS khong hop le: " + rootMessage(ex));
-    }
+        Webhook webhook;
+        WebhookData data;
 
-    if (data == null || data.getOrderCode() == null) {
-      throw new AppException(HttpStatus.BAD_REQUEST, "Webhook payOS thieu orderCode");
-    }
+        try {
+            webhook = objectMapper.readValue(rawBody, Webhook.class);
+            data = new PayOS(clientId, apiKey, checksumKey).webhooks().verify(webhook);
+        } catch (Exception ex) {
+            throw new AppException(
+                    HttpStatus.BAD_REQUEST, "Webhook payOS khong hop le: " + rootMessage(ex));
+        }
 
-    PayOsPaymentRow payment =
-        posRepository
-            .lockPayOsPaymentByOrderCode(data.getOrderCode())
-            .orElseThrow(
-                () -> new AppException(HttpStatus.NOT_FOUND, "Khong tim thay giao dich payOS"));
+        if (data == null || data.getOrderCode() == null) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Webhook payOS thieu orderCode");
+        }
 
-    OrderRow order =
-        posRepository
-            .lockOrder(payment.maHoaDon())
-            .orElseThrow(
-                () -> new AppException(HttpStatus.NOT_FOUND, "Khong tim thay hoa don payOS"));
+        Optional<PayOsPaymentRow> paymentOpt =
+                posRepository.lockPayOsPaymentByOrderCode(data.getOrderCode());
 
-    if ("COMPLETED".equals(order.trangThaiHoaDon())) {
-      posRepository.updatePayOsRawWebhook(payment.maThanhToan(), data.getReference(), rawBody);
-      return new PayOsWebhookResponse(payment.orderCode(), payment.maHoaDon(), "ALREADY_COMPLETED");
-    }
+        if (paymentOpt.isEmpty()) {
+            System.out.println(
+                    "payOS webhook verified but orderCode not found in DB: " + data.getOrderCode());
 
-    if (isSuccessWebhook(webhook, data)) {
-      BigDecimal paidAmount = BigDecimal.valueOf(data.getAmount() == null ? 0L : data.getAmount());
-      if (paidAmount.compareTo(payment.soTien()) != 0
-          || paidAmount.compareTo(order.tongThanhToan()) != 0) {
+            return new PayOsWebhookResponse(
+                    data.getOrderCode(),
+                    null,
+                    "IGNORED");
+        }
+
+        PayOsPaymentRow payment = paymentOpt.get();
+
+        OrderRow order =
+                posRepository
+                        .lockOrder(payment.maHoaDon())
+                        .orElseThrow(
+                                () -> new AppException(HttpStatus.NOT_FOUND, "Khong tim thay hoa don payOS"));
+
+        if ("COMPLETED".equals(order.trangThaiHoaDon())) {
+            posRepository.updatePayOsRawWebhook(payment.maThanhToan(), data.getReference(), rawBody);
+
+            return new PayOsWebhookResponse(
+                    payment.orderCode(),
+                    payment.maHoaDon(),
+                    "ALREADY_COMPLETED");
+        }
+
+        if (isSuccessWebhook(webhook, data)) {
+            BigDecimal paidAmount = BigDecimal.valueOf(data.getAmount() == null ? 0L : data.getAmount());
+
+            if (paidAmount.compareTo(payment.soTien()) != 0
+                    || paidAmount.compareTo(order.tongThanhToan()) != 0) {
+                posRepository.markPayOsFailed(payment.maThanhToan(), data.getReference(), rawBody);
+                throw new AppException(HttpStatus.BAD_REQUEST, "So tien webhook payOS khong khop hoa don");
+            }
+
+            posRepository.markPayOsPaid(payment.maThanhToan(), data.getReference(), rawBody);
+            posRepository.markOrderPaid(payment.maHoaDon(), "BANK_TRANSFER");
+            deductionService.completePaidOrderAndDeductStock(payment.maHoaDon());
+
+            return new PayOsWebhookResponse(
+                    payment.orderCode(),
+                    payment.maHoaDon(),
+                    "COMPLETED");
+        }
+
+        if (isCancelledWebhook(webhook, data)) {
+            posRepository.markPayOsCancelled(payment.maThanhToan(), data.getReference(), rawBody);
+            posRepository.cancelOrder(payment.maHoaDon());
+
+            return new PayOsWebhookResponse(
+                    payment.orderCode(),
+                    payment.maHoaDon(),
+                    "CANCELLED");
+        }
+
         posRepository.markPayOsFailed(payment.maThanhToan(), data.getReference(), rawBody);
-        throw new AppException(HttpStatus.BAD_REQUEST, "So tien webhook payOS khong khop hoa don");
-      }
+        posRepository.cancelOrder(payment.maHoaDon());
 
-      posRepository.markPayOsPaid(payment.maThanhToan(), data.getReference(), rawBody);
-      posRepository.markOrderPaid(payment.maHoaDon(), "BANK_TRANSFER");
-      deductionService.completePaidOrderAndDeductStock(payment.maHoaDon());
-      return new PayOsWebhookResponse(payment.orderCode(), payment.maHoaDon(), "COMPLETED");
+        return new PayOsWebhookResponse(
+                payment.orderCode(),
+                payment.maHoaDon(),
+                "FAILED");
     }
-
-    if (isCancelledWebhook(webhook, data)) {
-      posRepository.markPayOsCancelled(payment.maThanhToan(), data.getReference(), rawBody);
-      posRepository.cancelOrder(payment.maHoaDon());
-      return new PayOsWebhookResponse(payment.orderCode(), payment.maHoaDon(), "CANCELLED");
-    }
-
-    posRepository.markPayOsFailed(payment.maThanhToan(), data.getReference(), rawBody);
-    posRepository.cancelOrder(payment.maHoaDon());
-    return new PayOsWebhookResponse(payment.orderCode(), payment.maHoaDon(), "FAILED");
-  }
 
   private BankQrResponse toBankQrResponse(PayOsPaymentRow payment) {
     return new BankQrResponse(

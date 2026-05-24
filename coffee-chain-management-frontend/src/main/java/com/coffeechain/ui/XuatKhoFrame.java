@@ -134,7 +134,6 @@ public class XuatKhoFrame extends JFrame {
   private final JTextField creatorField =
       new JTextField(SessionManager.getCurrentUserDisplayName());
   private final JTextField quantityField = new JTextField();
-  private final JTextField priceField = new JTextField();
   private final JTextArea noteArea = new JTextArea();
 
   private final JLabel totalLabel = new JLabel("0");
@@ -162,10 +161,10 @@ public class XuatKhoFrame extends JFrame {
   private final JTable exportTable = new JTable(exportTableModel);
 
   private final DefaultTableModel lotTableModel =
-      new DefaultTableModel(new Object[] {"Mã lô", "Hạn sử dụng", "Còn lại", "SL xuất"}, 0) {
+      new DefaultTableModel(new Object[] {"Mã lô", "Hạn sử dụng", "Còn lại", "Đơn giá", "SL xuất"}, 0) {
         @Override
         public boolean isCellEditable(int row, int column) {
-          return column == 3;
+          return column == 4;
         }
       };
   private final JTable lotTable = new JTable(lotTableModel);
@@ -361,8 +360,11 @@ public class XuatKhoFrame extends JFrame {
     addLabel(detailCard, "Số lượng xuất:", 330, 12, 120, 18);
     addField(detailCard, quantityField, 330, 34, 140, 30, true, "0");
 
-    addLabel(detailCard, "Đơn giá xuất:", 530, 12, 120, 18);
-    addField(detailCard, priceField, 530, 34, 140, 30, true, "0");
+    JLabel autoPriceHint = new JLabel("Đơn giá xuất được tự động tính theo giá vốn lô FEFO hoặc lô thủ công.");
+    autoPriceHint.setBounds(530, 34, 520, 30);
+    autoPriceHint.setForeground(MUTED);
+    autoPriceHint.setFont(UiTheme.regular(13));
+    detailCard.add(autoPriceHint);
 
     RoundedButton addToListButton = primaryButton("Thêm vào phiếu");
     addToListButton.setBounds(1130, 34, 150, 30);
@@ -383,6 +385,7 @@ public class XuatKhoFrame extends JFrame {
     lotTable.getColumnModel().getColumn(1).setPreferredWidth(130);
     lotTable.getColumnModel().getColumn(2).setPreferredWidth(120);
     lotTable.getColumnModel().getColumn(3).setPreferredWidth(120);
+    lotTable.getColumnModel().getColumn(4).setPreferredWidth(120);
 
     JScrollPane lotScroll = hiddenScrollPane(lotTable);
     lotScroll.setBounds(44, 642, 1352, 150);
@@ -469,7 +472,7 @@ public class XuatKhoFrame extends JFrame {
         e -> {
           if (manualLotCheckBox.isSelected()
               && e.getType() == TableModelEvent.UPDATE
-              && e.getColumn() == 3) {
+              && e.getColumn() == 4) {
             updateManualQuantityFromLots();
           }
         });
@@ -626,6 +629,7 @@ public class XuatKhoFrame extends JFrame {
             lot.getMaLoHang(),
             lot.getHanSuDung() == null ? "" : lot.getHanSuDung(),
             numberFormat.format(nullToZero(lot.getSoLuongConLai())),
+            numberFormat.format(nullToZero(lot.getDonGiaNhap())),
             ""
           });
     }
@@ -650,7 +654,12 @@ public class XuatKhoFrame extends JFrame {
    * hiển thị vào exportTableModel. 7. Cập nhật tổng tiền bằng updateTotal().
    */
   private void addLine() {
+    OptionDto warehouse = (OptionDto) warehouseCombo.getSelectedItem();
     OptionDto ingredient = (OptionDto) ingredientCombo.getSelectedItem();
+    if (warehouse == null) {
+      showWarning("Vui lòng chọn kho xuất");
+      return;
+    }
     if (ingredient == null) {
       showWarning("Vui lòng chọn nguyên liệu");
       return;
@@ -659,6 +668,7 @@ public class XuatKhoFrame extends JFrame {
     boolean manual = manualLotCheckBox.isSelected();
 
     BigDecimal quantity;
+    BigDecimal price;
     List<ExportLotSelectionRequest> lotSelections = new ArrayList<>();
 
     if (manual) {
@@ -669,20 +679,20 @@ public class XuatKhoFrame extends JFrame {
       quantity = manualResult.totalQuantity();
       lotSelections = manualResult.selections();
       quantityField.setText(numberFormat.format(quantity));
+      price = calculateManualWeightedUnitPrice(lotSelections, quantity);
     } else {
       quantity = parsePositiveDecimal(quantityField.getText(), "Số lượng xuất phải lớn hơn 0");
       if (quantity == null) {
         return;
       }
-    }
-
-    BigDecimal price = parseNonNegativeDecimal(priceField.getText(), "Đơn giá xuất không hợp lệ");
-    if (price == null) {
-      return;
+      price = calculateFefoWeightedUnitPrice(warehouse.getId(), ingredient.getId(), quantity);
+      if (price == null) {
+        return;
+      }
     }
 
     ExportLine line =
-        new ExportLine(ingredient, quantity, price, manual ? "Thủ công" : "FEFO", lotSelections);
+        new ExportLine(ingredient, quantity, price, manual ? "Thủ công" : "FEFO", lotSelections, true);
 
     lines.add(line);
 
@@ -703,7 +713,6 @@ public class XuatKhoFrame extends JFrame {
       refreshLotsIfManual();
     }
   }
-
   /**
    * Thu thập dữ liệu lô do người dùng nhập thủ công.
    *
@@ -731,7 +740,7 @@ public class XuatKhoFrame extends JFrame {
     BigDecimal selectedTotal = BigDecimal.ZERO;
 
     for (int i = 0; i < lotTableModel.getRowCount(); i++) {
-      Object rawQty = lotTableModel.getValueAt(i, 3);
+      Object rawQty = lotTableModel.getValueAt(i, 4);
 
       if (rawQty == null || rawQty.toString().trim().isEmpty()) {
         continue;
@@ -795,7 +804,7 @@ public class XuatKhoFrame extends JFrame {
     BigDecimal total = BigDecimal.ZERO;
 
     for (int i = 0; i < lotTableModel.getRowCount(); i++) {
-      Object rawQty = lotTableModel.getValueAt(i, 3);
+      Object rawQty = lotTableModel.getValueAt(i, 4);
       if (rawQty == null || rawQty.toString().trim().isEmpty()) {
         continue;
       }
@@ -812,6 +821,68 @@ public class XuatKhoFrame extends JFrame {
     }
 
     quantityField.setText(total.compareTo(BigDecimal.ZERO) == 0 ? "" : numberFormat.format(total));
+  }
+
+
+  private BigDecimal calculateManualWeightedUnitPrice(
+      List<ExportLotSelectionRequest> lotSelections, BigDecimal totalQuantity) {
+    if (totalQuantity == null || totalQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+      return BigDecimal.ZERO;
+    }
+
+    BigDecimal totalValue = BigDecimal.ZERO;
+    for (ExportLotSelectionRequest selection : lotSelections) {
+      InventoryLotDto lot = findCurrentLot(selection.getMaLoHang());
+      BigDecimal unitPrice = lot == null ? BigDecimal.ZERO : nullToZero(lot.getDonGiaNhap());
+      totalValue = totalValue.add(unitPrice.multiply(nullToZero(selection.getSoLuongXuat())));
+    }
+    return totalValue.divide(totalQuantity, 3, java.math.RoundingMode.HALF_UP);
+  }
+
+  private BigDecimal calculateFefoWeightedUnitPrice(
+      Long maKho, Long maNguyenLieu, BigDecimal totalQuantity) {
+    List<InventoryLotDto> lots;
+    try {
+      lots = apiClient.getExportLots(maKho, maNguyenLieu);
+    } catch (Exception ex) {
+        showWarning("Không tải được lô để tính đơn giá FEFO: " + unwrapMessage(ex));
+      return null;
+    }
+
+    BigDecimal remaining = totalQuantity;
+    BigDecimal totalValue = BigDecimal.ZERO;
+    for (InventoryLotDto lot : lots) {
+      if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+        break;
+      }
+
+      BigDecimal available = nullToZero(lot.getSoLuongConLai());
+      if (available.compareTo(BigDecimal.ZERO) <= 0) {
+        continue;
+      }
+
+      BigDecimal take = available.min(remaining);
+      BigDecimal unitPrice = nullToZero(lot.getDonGiaNhap());
+      totalValue = totalValue.add(unitPrice.multiply(take));
+      remaining = remaining.subtract(take);
+    }
+
+    if (remaining.compareTo(BigDecimal.ZERO) > 0) {
+        showWarning(
+                "Không đủ tồn theo lô để xuất. Thiếu " + numberFormat.format(remaining) + " đơn vị.");
+      return null;
+    }
+
+    return totalValue.divide(totalQuantity, 3, java.math.RoundingMode.HALF_UP);
+  }
+
+  private InventoryLotDto findCurrentLot(Long maLoHang) {
+    for (InventoryLotDto lot : currentLots) {
+      if (lot.getMaLoHang() != null && lot.getMaLoHang().equals(maLoHang)) {
+        return lot;
+      }
+    }
+    return null;
   }
 
   private void removeSelectedExportLine() {
@@ -878,7 +949,6 @@ public class XuatKhoFrame extends JFrame {
       CreateExportReceiptItemRequest item = new CreateExportReceiptItemRequest();
       item.setMaNguyenLieu(line.ingredient().getId());
       item.setSoLuongXuat(line.quantity());
-      item.setDonGiaXuat(line.price());
       if (manual) {
         item.setLoHangXuat(line.lotSelections());
       }
@@ -943,7 +1013,6 @@ public class XuatKhoFrame extends JFrame {
 
   private void clearLineInputs() {
     quantityField.setText("");
-    priceField.setText("");
 
     boolean manual = manualLotCheckBox.isSelected();
     quantityField.setEditable(!manual);
@@ -961,18 +1030,6 @@ public class XuatKhoFrame extends JFrame {
       return null;
     }
     if (value.compareTo(BigDecimal.ZERO) <= 0) {
-      showWarning(message);
-      return null;
-    }
-    return value;
-  }
-
-  private BigDecimal parseNonNegativeDecimal(String raw, String message) {
-    BigDecimal value = parseDecimal(raw, message);
-    if (value == null) {
-      return null;
-    }
-    if (value.compareTo(BigDecimal.ZERO) < 0) {
       showWarning(message);
       return null;
     }
@@ -1002,7 +1059,6 @@ public class XuatKhoFrame extends JFrame {
     ingredientCombo.setEnabled(enabled);
     manualLotCheckBox.setEnabled(enabled);
     quantityField.setEnabled(enabled);
-    priceField.setEnabled(enabled);
     noteArea.setEnabled(enabled);
     saveButton.setEnabled(enabled);
     lotTable.setEnabled(enabled && manualLotCheckBox.isSelected());
@@ -1296,9 +1352,10 @@ public class XuatKhoFrame extends JFrame {
       BigDecimal quantity,
       BigDecimal price,
       String lotMode,
-      List<ExportLotSelectionRequest> lotSelections) {
+      List<ExportLotSelectionRequest> lotSelections,
+      boolean manualPrice) {
     BigDecimal amount() {
-      return quantity.multiply(price);
+      return quantity.multiply(price == null ? BigDecimal.ZERO : price);
     }
   }
 

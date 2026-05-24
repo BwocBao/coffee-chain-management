@@ -143,17 +143,9 @@ public class InventoryService {
     }
     validateWarehouseAccess(warehouse, user);
 
-    BigDecimal total = calculateExportTotal(request.getItems());
-    Long receiptId =
-        inventoryRepository.createExportReceipt(
-            request.getMaKho(),
-            normalizeExportType(request.getLoaiXuat()),
-            total,
-            user.getMaNguoiDung(),
-            request.getGhiChu());
-
     boolean manualMode = Boolean.TRUE.equals(request.getChonLoThuCong());
-    int detailCount = 0;
+    List<ComputedExportItem> computedItems = new ArrayList<>();
+    BigDecimal total = BigDecimal.ZERO;
 
     for (CreateExportReceiptItemRequest item : request.getItems()) {
       if (!inventoryRepository.ingredientExists(item.getMaNguyenLieu())) {
@@ -173,7 +165,24 @@ public class InventoryService {
               ? buildManualAllocations(request.getMaKho(), item)
               : buildFefoAllocations(request.getMaKho(), item);
 
-      for (LotAllocation allocation : allocations) {
+      BigDecimal itemValue = calculateAllocationValue(allocations);
+      total = total.add(itemValue);
+      computedItems.add(new ComputedExportItem(item, allocations));
+    }
+
+    Long receiptId =
+        inventoryRepository.createExportReceipt(
+            request.getMaKho(),
+            normalizeExportType(request.getLoaiXuat()),
+            total,
+            user.getMaNguoiDung(),
+            request.getGhiChu());
+
+    int detailCount = 0;
+
+    for (ComputedExportItem computedItem : computedItems) {
+      CreateExportReceiptItemRequest item = computedItem.item();
+      for (LotAllocation allocation : computedItem.allocations()) {
         BigDecimal stockBefore =
             inventoryRepository.findCurrentStock(request.getMaKho(), item.getMaNguyenLieu());
         inventoryRepository.createExportDetail(
@@ -181,7 +190,7 @@ public class InventoryService {
             item,
             allocation.maLoHang(),
             allocation.quantity(),
-            normalizeUnitPrice(item.getDonGiaXuat()));
+            normalizeUnitPrice(allocation.unitPrice()));
 
         boolean lotUpdated =
             inventoryRepository.decreaseLot(allocation.maLoHang(), allocation.quantity());
@@ -651,21 +660,10 @@ public class InventoryService {
     if (item.getSoLuongXuat() == null || item.getSoLuongXuat().compareTo(BigDecimal.ZERO) <= 0) {
       throw new AppException(HttpStatus.BAD_REQUEST, "So luong xuat phai lon hon 0");
     }
-    if (item.getDonGiaXuat() != null && item.getDonGiaXuat().compareTo(BigDecimal.ZERO) < 0) {
-      throw new AppException(HttpStatus.BAD_REQUEST, "Don gia xuat khong hop le");
-    }
     if (manualMode && (item.getLoHangXuat() == null || item.getLoHangXuat().isEmpty())) {
       throw new AppException(
           HttpStatus.BAD_REQUEST, "Vui long chon lo hang khi bat che do chon lo thu cong");
     }
-  }
-
-  private BigDecimal calculateExportTotal(List<CreateExportReceiptItemRequest> items) {
-    BigDecimal total = BigDecimal.ZERO;
-    for (CreateExportReceiptItemRequest item : items) {
-      total = total.add(item.getSoLuongXuat().multiply(normalizeUnitPrice(item.getDonGiaXuat())));
-    }
-    return total;
   }
 
   private List<LotAllocation> buildFefoAllocations(
@@ -684,7 +682,7 @@ public class InventoryService {
       }
 
       BigDecimal take = available.min(remaining);
-      allocations.add(new LotAllocation(lot.maLoHang(), take));
+      allocations.add(new LotAllocation(lot.maLoHang(), take, normalizeUnitPrice(lot.donGiaNhap())));
       remaining = remaining.subtract(take);
     }
 
@@ -731,10 +729,19 @@ public class InventoryService {
         throw new AppException(
             HttpStatus.BAD_REQUEST, "Lo hang khong du so luong: " + entry.getKey());
       }
-      allocations.add(new LotAllocation(entry.getKey(), entry.getValue()));
+      allocations.add(new LotAllocation(entry.getKey(), entry.getValue(), normalizeUnitPrice(lot.donGiaNhap())));
     }
 
     return allocations;
+  }
+
+
+  private BigDecimal calculateAllocationValue(List<LotAllocation> allocations) {
+    BigDecimal total = BigDecimal.ZERO;
+    for (LotAllocation allocation : allocations) {
+      total = total.add(allocation.quantity().multiply(normalizeUnitPrice(allocation.unitPrice())));
+    }
+    return total;
   }
 
   private String normalizeExportType(String value) {
@@ -810,5 +817,12 @@ public class InventoryService {
     return user.getMaChiNhanh();
   }
 
-  private record LotAllocation(Long maLoHang, BigDecimal quantity) {}
+  private record ComputedExportItem(
+          CreateExportReceiptItemRequest item,
+          List<LotAllocation> allocations) {}
+
+  private record LotAllocation(
+          Long maLoHang,
+          BigDecimal quantity,
+          BigDecimal unitPrice) {}
 }
