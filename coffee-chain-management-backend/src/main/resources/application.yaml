@@ -1,14 +1,20 @@
 server:
   port: 8080
 
+
 spring:
   config:
     import: optional:file:.env[.properties]
   datasource:
+    hikari:
+      maximum-pool-size: 6
+      minimum-idle: 3
+      connection-timeout: 30000
     url: ${DB_URL:jdbc:oracle:thin:@localhost:1521/XEPDB1}
     username: ${DB_USERNAME:CAFE_APP}
     password: ${DB_PASSWORD:}
     driver-class-name: oracle.jdbc.OracleDriver
+
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
@@ -37,12 +43,13 @@ app:
   mail:
     enabled: ${MAIL_ENABLED:false}
     from: ${MAIL_FROM:${MAIL_USERNAME:no-reply@phungloc.local}}
+
 payos:
   client-id: ${PAYOS_CLIENT_ID:}
   api-key: ${PAYOS_API_KEY:}
   checksum-key: ${PAYOS_CHECKSUM_KEY:}
-  return-url: ${PAYOS_RETURN_URL:http://localhost:8080/api/payments/payos/return}
-  cancel-url: ${PAYOS_CANCEL_URL:http://localhost:8080/api/payments/payos/cancel}
+  return-url: ${PAYOS_RETURN_URL:http:}
+  cancel-url: ${PAYOS_CANCEL_URL:http:}
 
 cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME:}
