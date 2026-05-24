@@ -20,8 +20,8 @@ public class CreateExportReceiptItemRequest {
   private BigDecimal soLuongXuat;
 
   @Schema(
-      description = "Don gia xuat de tinh tong gia tri. Co the de 0 neu khong can gia tri",
-      example = "95000")
+      description = "Deprecated: frontend khong can gui. Backend tu tinh don gia xuat theo gia von cac lo FEFO hoac lo thu cong.",
+      example = "0")
   private BigDecimal donGiaXuat = BigDecimal.ZERO;
 
   @Schema(description = "Danh sach lo thu cong. Chi can gui khi chonLoThuCong = true")
