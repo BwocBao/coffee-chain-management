@@ -201,8 +201,7 @@ public class InventoryController {
                                               "items": [
                                                 {
                                                   "maNguyenLieu": 2,
-                                                  "soLuongXuat": 300,
-                                                  "donGiaXuat": 95
+                                                  "soLuongXuat": 300
                                                 }
                                               ]
                                             }
@@ -220,7 +219,6 @@ public class InventoryController {
                                                 {
                                                   "maNguyenLieu": 2,
                                                   "soLuongXuat": 300,
-                                                  "donGiaXuat": 95,
                                                   "loHangXuat": [
                                                     {
                                                       "maLoHang": 5,
