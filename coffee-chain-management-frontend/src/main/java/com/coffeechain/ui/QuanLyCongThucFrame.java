@@ -952,28 +952,37 @@ public class QuanLyCongThucFrame extends JFrame {
 
     @Override
     protected void paintComponent(Graphics g) {
+      super.paintComponent(g);
+
       Graphics2D g2 = (Graphics2D) g.create();
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+      g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+      g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+      int arc = 10;
       g2.setColor(WHITE);
-      g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
-      g2.setColor(BORDER);
-      g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+      g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arc, arc);
 
       if (image != null) {
-        double scale =
-            Math.min(
-                (getWidth() - 16) / (double) image.getWidth(),
-                (getHeight() - 16) / (double) image.getHeight());
+        int padding = 8;
+        int targetX = padding;
+        int targetY = padding;
+        int targetW = Math.max(1, getWidth() - padding * 2);
+        int targetH = Math.max(1, getHeight() - padding * 2);
+
+        double scale = Math.max(targetW / (double) image.getWidth(), targetH / (double) image.getHeight());
         int drawW = Math.max(1, (int) Math.round(image.getWidth() * scale));
         int drawH = Math.max(1, (int) Math.round(image.getHeight() * scale));
-        int x = (getWidth() - drawW) / 2;
-        int y = (getHeight() - drawH) / 2;
+        int x = targetX + (targetW - drawW) / 2;
+        int y = targetY + (targetH - drawH) / 2;
+
+        Shape oldClip = g2.getClip();
         g2.setClip(
-            new java.awt.geom.RoundRectangle2D.Float(4, 4, getWidth() - 8, getHeight() - 8, 8, 8));
+            new java.awt.geom.RoundRectangle2D.Float(targetX, targetY, targetW, targetH, 8, 8));
         g2.drawImage(image, x, y, drawW, drawH, null);
-        g2.setClip(null);
+        g2.setClip(oldClip);
       } else {
-        String text = loading ? "Đang tải ảnh..." : "Click để tải ảnh";
+        String text = loading ? "Dang tai anh..." : "Click de tai anh";
         g2.setColor(MUTED);
         g2.setFont(UiTheme.regular(12));
         FontMetrics fm = g2.getFontMetrics();
@@ -982,8 +991,11 @@ public class QuanLyCongThucFrame extends JFrame {
         g2.drawString(text, Math.max(8, x), y);
       }
 
+      g2.setClip(null);
+      g2.setStroke(new BasicStroke(1.3f));
+      g2.setColor(BORDER);
+      g2.drawRoundRect(0, 0, getWidth() - 2, getHeight() - 2, arc, arc);
       g2.dispose();
-      super.paintComponent(g);
     }
   }
 

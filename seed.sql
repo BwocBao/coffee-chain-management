@@ -536,7 +536,7 @@ USING (
     SELECT
         'Cà phê sữa đá' ten,
         35000 gia,
-        'https://placehold.co/600x400?text=Ca+phe+sua+da' hinh
+        'https://res.cloudinary.com/dxnfzumzp/image/upload/v1779806827/Ca_Phe_Sua_Da_s03kl5.jpg' hinh
     FROM dual
 ) s
 ON (t.ten_san_pham = s.ten)
@@ -553,7 +553,7 @@ USING (
     SELECT
         'Bạc xỉu' ten,
         39000 gia,
-        'https://placehold.co/600x400?text=Bac+xiu' hinh
+        'https://res.cloudinary.com/dxnfzumzp/image/upload/v1779806827/Bac_Xiu_mqrc2u.jpg' hinh
     FROM dual
 ) s
 ON (t.ten_san_pham = s.ten)
@@ -570,7 +570,7 @@ USING (
     SELECT
         'Latte đá' ten,
         45000 gia,
-        'https://placehold.co/600x400?text=Latte+da' hinh
+        'https://res.cloudinary.com/dxnfzumzp/image/upload/v1779806828/Latte_Da_vo4fpv.jpg' hinh
     FROM dual
 ) s
 ON (t.ten_san_pham = s.ten)
@@ -587,7 +587,7 @@ USING (
     SELECT
         'Trà sữa trân châu' ten,
         42000 gia,
-        'https://placehold.co/600x400?text=Tra+sua+tran+chau' hinh
+        'https://res.cloudinary.com/dxnfzumzp/image/upload/v1779806826/Tra_Sua_Tran_Chau_hpu1b4.jpg' hinh
     FROM dual
 ) s
 ON (t.ten_san_pham = s.ten)
@@ -606,7 +606,7 @@ USING (
     SELECT
         'Americano đá' ten,
         39000 gia,
-        'https://placehold.co/600x400?text=Americano+da' hinh
+        'https://res.cloudinary.com/dxnfzumzp/image/upload/v1779806826/Americano_Da_oylyyd.jpg' hinh
     FROM dual
 ) s
 ON (t.ten_san_pham = s.ten)
@@ -623,7 +623,7 @@ USING (
     SELECT
         'Cacao sữa đá' ten,
         45000 gia,
-        'https://placehold.co/600x400?text=Cacao+sua+da' hinh
+        'https://res.cloudinary.com/dxnfzumzp/image/upload/v1779806827/Cacao_Sua_Da_aq8glg.jpg' hinh
     FROM dual
 ) s
 ON (t.ten_san_pham = s.ten)
@@ -640,7 +640,7 @@ USING (
     SELECT
         'Caramel macchiato' ten,
         59000 gia,
-        'https://placehold.co/600x400?text=Caramel+macchiato' hinh
+        'https://res.cloudinary.com/dxnfzumzp/image/upload/v1779807537/Caramel_Macchiato_ttjpex.jpg' hinh
     FROM dual
 ) s
 ON (t.ten_san_pham = s.ten)
@@ -657,7 +657,7 @@ USING (
     SELECT
         'Matcha latte' ten,
         55000 gia,
-        'https://placehold.co/600x400?text=Matcha+latte' hinh
+        'https://res.cloudinary.com/dxnfzumzp/image/upload/v1779806826/Matcha_Latte_fkrebz.jpg' hinh
     FROM dual
 ) s
 ON (t.ten_san_pham = s.ten)
@@ -674,7 +674,7 @@ USING (
     SELECT
         'Trà đào' ten,
         49000 gia,
-        'https://placehold.co/600x400?text=Tra+dao' hinh
+        'https://res.cloudinary.com/dxnfzumzp/image/upload/v1779806828/Tra_Dao_boefhf.jpg' hinh
     FROM dual
 ) s
 ON (t.ten_san_pham = s.ten)
