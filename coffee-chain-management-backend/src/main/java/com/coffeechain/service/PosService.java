@@ -3,7 +3,9 @@ package com.coffeechain.service;
 import com.coffeechain.dto.request.CreatePosOrderRequest;
 import com.coffeechain.dto.request.PosOrderItemRequest;
 import com.coffeechain.dto.response.BankQrResponse;
+import com.coffeechain.dto.response.PosLookupResponse;
 import com.coffeechain.dto.response.PosOrderResponse;
+import com.coffeechain.dto.response.PosOrderSummaryResponse;
 import com.coffeechain.dto.response.PosProductResponse;
 import com.coffeechain.exception.AppException;
 import com.coffeechain.repository.PosRepository;
@@ -35,6 +37,25 @@ public class PosService {
 
   public List<PosProductResponse> getProducts() {
     return posRepository.findPosProducts();
+  }
+
+  public PosLookupResponse getLookups(SessionUser user) {
+    PosLookupResponse response = new PosLookupResponse();
+    Long forcedBranch = forcedBranch(user);
+    response.setBranches(posRepository.findBranchOptions(forcedBranch));
+    response.setPosDevices(posRepository.findPosOptions(forcedBranch));
+    return response;
+  }
+
+  public List<PosOrderSummaryResponse> searchOrders(
+      Long maChiNhanh, String keyword, String status, Integer limit, SessionUser user) {
+    Long forcedBranch = forcedBranch(user);
+    if (forcedBranch != null && maChiNhanh != null && !forcedBranch.equals(maChiNhanh)) {
+      throw new AppException(HttpStatus.FORBIDDEN, "Khong duoc xem don hang cua chi nhanh khac");
+    }
+
+    int safeLimit = limit == null ? 50 : limit;
+    return posRepository.searchOrders(forcedBranch, maChiNhanh, keyword, status, safeLimit);
   }
 
   @Transactional(rollbackFor = Exception.class)
@@ -148,6 +169,7 @@ public class PosService {
     return new PosOrderResponse(
         order.maHoaDon(),
         order.maChiNhanh(),
+        order.tenChiNhanh(),
         order.maPos(),
         order.maNguoiDung(),
         order.trangThaiHoaDon(),
@@ -158,6 +180,23 @@ public class PosService {
         order.thoiGianThanhToan(),
         posRepository.findOrderItems(maHoaDon),
         posRepository.findLatestPayOsPayment(maHoaDon).orElse(null));
+  }
+
+  private Long forcedBranch(SessionUser user) {
+    if (user == null) {
+      throw new AppException(HttpStatus.UNAUTHORIZED, "Chua dang nhap hoac token het han");
+    }
+
+    String role = user.getTenVaiTro() == null ? "" : user.getTenVaiTro().trim().toUpperCase();
+    if ("ADMIN".equals(role)) {
+      return null;
+    }
+
+    Long userBranchId = user.getMaChiNhanh();
+    if (userBranchId == null) {
+      throw new AppException(HttpStatus.FORBIDDEN, "Tai khoan chua gan chi nhanh");
+    }
+    return userBranchId;
   }
 
   private void validateBranchScope(SessionUser user, Long maChiNhanh) {

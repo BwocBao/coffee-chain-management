@@ -2,6 +2,8 @@ package com.coffeechain.repository;
 
 import com.coffeechain.dto.request.PosOrderItemRequest;
 import com.coffeechain.dto.response.PosOrderItemResponse;
+import com.coffeechain.dto.response.PosLookupResponse;
+import com.coffeechain.dto.response.PosOrderSummaryResponse;
 import com.coffeechain.dto.response.PosPaymentResponse;
 import com.coffeechain.dto.response.PosProductResponse;
 import java.math.BigDecimal;
@@ -70,6 +72,60 @@ public class PosRepository {
             .usingGeneratedKeyColumns("MA_THANH_TOAN");
   }
 
+
+  public List<PosLookupResponse.OptionDto> findBranchOptions(Long forcedMaChiNhanh) {
+    List<Object> params = new ArrayList<>();
+    StringBuilder sql =
+        new StringBuilder(
+            """
+                SELECT ma_chi_nhanh, ten_chi_nhanh, so_dien_thoai
+                FROM CHINHANH
+                WHERE trang_thai = 'ACTIVE'
+                """);
+    if (forcedMaChiNhanh != null) {
+      sql.append(" AND ma_chi_nhanh = ?");
+      params.add(forcedMaChiNhanh);
+    }
+    sql.append(" ORDER BY ten_chi_nhanh");
+
+    return jdbcTemplate.query(
+        sql.toString(),
+        (rs, rowNum) ->
+            new PosLookupResponse.OptionDto(
+                rs.getLong("ma_chi_nhanh"),
+                rs.getString("so_dien_thoai"),
+                rs.getString("ten_chi_nhanh"),
+                null),
+        params.toArray());
+  }
+
+  public List<PosLookupResponse.OptionDto> findPosOptions(Long forcedMaChiNhanh) {
+    List<Object> params = new ArrayList<>();
+    StringBuilder sql =
+        new StringBuilder(
+            """
+                SELECT p.ma_pos, p.ma_thiet_bi, p.trang_thai_thiet_bi, cn.ma_chi_nhanh, cn.ten_chi_nhanh
+                FROM MAYPOS p
+                JOIN CHINHANH cn ON cn.ma_chi_nhanh = p.ma_chi_nhanh
+                WHERE p.trang_thai_thiet_bi <> 'DISABLED'
+                  AND cn.trang_thai = 'ACTIVE'
+                """);
+    if (forcedMaChiNhanh != null) {
+      sql.append(" AND p.ma_chi_nhanh = ?");
+      params.add(forcedMaChiNhanh);
+    }
+    sql.append(" ORDER BY cn.ten_chi_nhanh, p.ma_pos");
+
+    return jdbcTemplate.query(
+        sql.toString(),
+        (rs, rowNum) ->
+            new PosLookupResponse.OptionDto(
+                rs.getLong("ma_pos"),
+                String.valueOf(rs.getLong("ma_chi_nhanh")),
+                rs.getString("ma_thiet_bi"),
+                rs.getString("ten_chi_nhanh") + " - " + rs.getString("trang_thai_thiet_bi")),
+        params.toArray());
+  }
   public List<PosProductResponse> findPosProducts() {
     return jdbcTemplate.query(
         """
@@ -178,23 +234,96 @@ public class PosRepository {
     return orderDetailInsert.executeAndReturnKey(params).longValue();
   }
 
+
+  public List<PosOrderSummaryResponse> searchOrders(
+      Long forcedMaChiNhanh, Long maChiNhanh, String keyword, String status, int limit) {
+    List<Object> params = new ArrayList<>();
+    StringBuilder sql =
+        new StringBuilder(
+            """
+                SELECT
+                    hd.ma_hoa_don,
+                    hd.ma_chi_nhanh,
+                    cn.ten_chi_nhanh,
+                    hd.ma_pos,
+                    hd.trang_thai_hoa_don,
+                    hd.trang_thai_thanh_toan,
+                    hd.phuong_thuc_thanh_toan,
+                    hd.tong_thanh_toan,
+                    hd.thoi_gian_tao_hoa_don,
+                    COUNT(ct.ma_ct_hoa_don) AS so_dong
+                FROM HOADON hd
+                JOIN CHINHANH cn ON cn.ma_chi_nhanh = hd.ma_chi_nhanh
+                LEFT JOIN CHITIETHOADON ct ON ct.ma_hoa_don = hd.ma_hoa_don
+                WHERE 1 = 1
+                """);
+
+    if (forcedMaChiNhanh != null) {
+      sql.append(" AND hd.ma_chi_nhanh = ?");
+      params.add(forcedMaChiNhanh);
+    } else if (maChiNhanh != null) {
+      sql.append(" AND hd.ma_chi_nhanh = ?");
+      params.add(maChiNhanh);
+    }
+
+    if (keyword != null && !keyword.trim().isEmpty()) {
+      sql.append(" AND (TO_CHAR(hd.ma_hoa_don) LIKE ? OR LOWER(cn.ten_chi_nhanh) LIKE ?)");
+      String text = "%" + keyword.trim().toLowerCase() + "%";
+      params.add(text);
+      params.add(text);
+    }
+
+    if (status != null && !status.trim().isEmpty()) {
+      sql.append(" AND hd.trang_thai_hoa_don = ?");
+      params.add(status.trim().toUpperCase());
+    }
+
+    sql.append(
+        """
+                GROUP BY
+                    hd.ma_hoa_don, hd.ma_chi_nhanh, cn.ten_chi_nhanh, hd.ma_pos,
+                    hd.trang_thai_hoa_don, hd.trang_thai_thanh_toan,
+                    hd.phuong_thuc_thanh_toan, hd.tong_thanh_toan, hd.thoi_gian_tao_hoa_don
+                ORDER BY hd.thoi_gian_tao_hoa_don DESC, hd.ma_hoa_don DESC
+                FETCH FIRST ? ROWS ONLY
+                """);
+    params.add(Math.max(1, Math.min(limit, 200)));
+
+    return jdbcTemplate.query(
+        sql.toString(),
+        (rs, rowNum) ->
+            new PosOrderSummaryResponse(
+                rs.getLong("ma_hoa_don"),
+                rs.getLong("ma_chi_nhanh"),
+                rs.getString("ten_chi_nhanh"),
+                rs.getLong("ma_pos"),
+                rs.getString("trang_thai_hoa_don"),
+                rs.getString("trang_thai_thanh_toan"),
+                rs.getString("phuong_thuc_thanh_toan"),
+                rs.getBigDecimal("tong_thanh_toan"),
+                toLocalDateTime(rs.getTimestamp("thoi_gian_tao_hoa_don")),
+                rs.getInt("so_dong")),
+        params.toArray());
+  }
   public Optional<OrderRow> findOrder(Long maHoaDon) {
     List<OrderRow> rows =
         jdbcTemplate.query(
             """
                 SELECT
-                    ma_hoa_don,
-                    ma_chi_nhanh,
-                    ma_pos,
-                    ma_nguoi_dung,
-                    trang_thai_hoa_don,
-                    trang_thai_thanh_toan,
-                    phuong_thuc_thanh_toan,
-                    tong_thanh_toan,
-                    thoi_gian_tao_hoa_don,
-                    thoi_gian_thanh_toan
-                FROM HOADON
-                WHERE ma_hoa_don = ?
+                    hd.ma_hoa_don,
+                    hd.ma_chi_nhanh,
+                    cn.ten_chi_nhanh,
+                    hd.ma_pos,
+                    hd.ma_nguoi_dung,
+                    hd.trang_thai_hoa_don,
+                    hd.trang_thai_thanh_toan,
+                    hd.phuong_thuc_thanh_toan,
+                    hd.tong_thanh_toan,
+                    hd.thoi_gian_tao_hoa_don,
+                    hd.thoi_gian_thanh_toan
+                FROM HOADON hd
+                JOIN CHINHANH cn ON cn.ma_chi_nhanh = hd.ma_chi_nhanh
+                WHERE hd.ma_hoa_don = ?
                 """,
             (rs, rowNum) -> mapOrderRow(rs),
             maHoaDon);
@@ -207,18 +336,20 @@ public class PosRepository {
         jdbcTemplate.query(
             """
                 SELECT
-                    ma_hoa_don,
-                    ma_chi_nhanh,
-                    ma_pos,
-                    ma_nguoi_dung,
-                    trang_thai_hoa_don,
-                    trang_thai_thanh_toan,
-                    phuong_thuc_thanh_toan,
-                    tong_thanh_toan,
-                    thoi_gian_tao_hoa_don,
-                    thoi_gian_thanh_toan
-                FROM HOADON
-                WHERE ma_hoa_don = ?
+                    hd.ma_hoa_don,
+                    hd.ma_chi_nhanh,
+                    cn.ten_chi_nhanh,
+                    hd.ma_pos,
+                    hd.ma_nguoi_dung,
+                    hd.trang_thai_hoa_don,
+                    hd.trang_thai_thanh_toan,
+                    hd.phuong_thuc_thanh_toan,
+                    hd.tong_thanh_toan,
+                    hd.thoi_gian_tao_hoa_don,
+                    hd.thoi_gian_thanh_toan
+                FROM HOADON hd
+                JOIN CHINHANH cn ON cn.ma_chi_nhanh = hd.ma_chi_nhanh
+                WHERE hd.ma_hoa_don = ?
                 FOR UPDATE
                 """,
             (rs, rowNum) -> mapOrderRow(rs),
@@ -679,6 +810,7 @@ public class PosRepository {
     return new OrderRow(
         rs.getLong("ma_hoa_don"),
         rs.getLong("ma_chi_nhanh"),
+        rs.getString("ten_chi_nhanh"),
         rs.getLong("ma_pos"),
         rs.getLong("ma_nguoi_dung"),
         rs.getString("trang_thai_hoa_don"),
@@ -712,6 +844,7 @@ public class PosRepository {
   public record OrderRow(
       Long maHoaDon,
       Long maChiNhanh,
+      String tenChiNhanh,
       Long maPos,
       Long maNguoiDung,
       String trangThaiHoaDon,

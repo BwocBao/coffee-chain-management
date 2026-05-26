@@ -3,7 +3,9 @@ package com.coffeechain.controller;
 import com.coffeechain.dto.BaseResponse;
 import com.coffeechain.dto.request.CreatePosOrderRequest;
 import com.coffeechain.dto.response.BankQrResponse;
+import com.coffeechain.dto.response.PosLookupResponse;
 import com.coffeechain.dto.response.PosOrderResponse;
+import com.coffeechain.dto.response.PosOrderSummaryResponse;
 import com.coffeechain.dto.response.PosProductResponse;
 import com.coffeechain.security.AuthGuard;
 import com.coffeechain.security.SessionUser;
@@ -53,6 +55,55 @@ public class PosController {
     this.authGuard = authGuard;
     this.invoicePdfService = invoicePdfService;
   }
+
+  @Operation(
+      summary = "Lay du lieu lookup cho man hinh POS",
+      description =
+          """
+          Lay danh sach chi nhanh va may POS de frontend render combobox tao hoa don.
+          ADMIN nhan tat ca chi nhanh/may POS dang hoat dong.
+          Quan ly chi nhanh va thu ngan chi nhan chi nhanh duoc gan voi tai khoan.
+
+          Request class: khong co body.
+          Response class: PosLookupResponse.
+          Quyen: ORDER:VIEW.
+          """)
+  @GetMapping("/lookups")
+  public ResponseEntity<BaseResponse<PosLookupResponse>> getLookups(
+      @Parameter(hidden = true) @RequestHeader(value = "Authorization", required = false)
+          String authHeader) {
+    SessionUser user = authGuard.requirePermission(authHeader, "ORDER:VIEW");
+    return ResponseEntity.ok(
+        BaseResponse.ok("Lay du lieu POS thanh cong", posService.getLookups(user)));
+  }
+
+  @Operation(
+      summary = "Tra cuu danh sach hoa don POS",
+      description =
+          """
+          Tra cuu cac hoa don POS gan day de hien thi o tab huy don/thanh toan.
+          Co the loc theo chi nhanh, tu khoa ma hoa don/ten chi nhanh va trang thai hoa don.
+          Tai khoan QUAN_LY_CHI_NHANH/THU_NGAN chi xem duoc du lieu chi nhanh cua minh.
+
+          Request class: query params maChiNhanh, keyword, status, limit.
+          Response class: List<PosOrderSummaryResponse>.
+          Quyen: ORDER:VIEW.
+          """)
+  @GetMapping("/orders")
+  public ResponseEntity<BaseResponse<List<PosOrderSummaryResponse>>> searchOrders(
+      @Parameter(hidden = true) @RequestHeader(value = "Authorization", required = false)
+          String authHeader,
+      @RequestParam(required = false) Long maChiNhanh,
+      @RequestParam(required = false) String keyword,
+      @RequestParam(required = false) String status,
+      @RequestParam(defaultValue = "50") Integer limit) {
+    SessionUser user = authGuard.requirePermission(authHeader, "ORDER:VIEW");
+    return ResponseEntity.ok(
+        BaseResponse.ok(
+            "Tra cuu hoa don POS thanh cong",
+            posService.searchOrders(maChiNhanh, keyword, status, limit, user)));
+  }
+
 
   @Operation(
       summary = "Lấy danh sách sản phẩm POS",

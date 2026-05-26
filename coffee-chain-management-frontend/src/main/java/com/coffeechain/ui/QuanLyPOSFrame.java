@@ -71,9 +71,7 @@ public class QuanLyPOSFrame extends JFrame {
               "Quản lý đơn hàng",
               "Tạo đơn hàng và\nthanh toán POS",
               ICON_PERMISSION,
-              () ->
-                  javax.swing.JOptionPane.showMessageDialog(
-                      this, "Sau này mở màn hình bán hàng POS")));
+              () -> FrameNavigator.open(this, new QuanLyDonHangFrame())));
     }
 
     if (PermissionUtil.hasAny("RECIPE:VIEW", "RECIPE:MANAGE")) {

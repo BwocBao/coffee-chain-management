@@ -38,6 +38,11 @@ public abstract class ApiClientSupport {
     return httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
   }
 
+
+  protected HttpResponse<byte[]> sendBytes(HttpRequest request)
+      throws IOException, InterruptedException {
+    return httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+  }
   protected <T> BaseResponse<T> readBaseResponse(
       HttpResponse<String> response, TypeReference<BaseResponse<T>> typeReference)
       throws IOException {

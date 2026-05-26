@@ -7,6 +7,7 @@ import java.util.List;
 public record PosOrderResponse(
     Long maHoaDon,
     Long maChiNhanh,
+    String tenChiNhanh,
     Long maPos,
     Long maNguoiDung,
     String trangThaiHoaDon,

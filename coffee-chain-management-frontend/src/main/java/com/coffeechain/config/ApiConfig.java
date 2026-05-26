@@ -69,4 +69,7 @@ public class ApiConfig {
   public static final String RECIPES_URL = BASE_URL + "/api/recipes";
   public static final String RECIPE_LOOKUPS_URL = BASE_URL + "/api/recipes/lookups";
   public static final String IMAGE_UPLOAD_URL = BASE_URL + "/api/uploads/images";
+  public static final String POS_LOOKUPS_URL = BASE_URL + "/api/pos/lookups";
+  public static final String POS_PRODUCTS_URL = BASE_URL + "/api/pos/products";
+  public static final String POS_ORDERS_URL = BASE_URL + "/api/pos/orders";
 }

@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 public class InvoicePdfService {
   private final InvoicePdfRepository invoicePdfRepository;
 
-  @Value("classpath:fonts/DejaVuSans.ttf")
+  @Value("classpath:fonts/NotoSans-Regular.ttf")
   private Resource vietnameseFontResource;
 
   private final NumberFormat moneyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
@@ -54,21 +54,25 @@ public class InvoicePdfService {
     try {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-      Document document = new Document(PageSize.A6, 18, 18, 18, 18);
+        Rectangle pageSize = items.size() <= 5
+                ? new Rectangle(PageSize.A6.getWidth(), PageSize.A6.getHeight() + 110)
+                : PageSize.A6;
+
+        Document document = new Document(pageSize, 18, 18, 8, 8);
       PdfWriter.getInstance(document, out);
 
       document.open();
 
       BaseFont baseFont = loadVietnameseBaseFont();
 
-      Font titleFont = new Font(baseFont, 15, Font.BOLD);
-      Font boldFont = new Font(baseFont, 9, Font.BOLD);
-      Font normalFont = new Font(baseFont, 8, Font.NORMAL);
-      Font smallFont = new Font(baseFont, 7, Font.NORMAL);
+        Font titleFont = new Font(baseFont, 12, Font.BOLD);
+        Font boldFont = new Font(baseFont, 8, Font.BOLD);
+        Font normalFont = new Font(baseFont, 7, Font.NORMAL);
+        Font smallFont = new Font(baseFont, 6, Font.NORMAL);
 
       addCentered(document, "PHỤNG LỘC COFFEE", titleFont);
       addCentered(document, "HÓA ĐƠN THANH TOÁN", boldFont);
-      addEmptyLine(document, 6);
+        addEmptyLine(document, 1);
 
       addInfoLine(document, "Chi nhánh", safe(header.tenChiNhanh()), normalFont);
       addInfoLine(document, "Địa chỉ", safe(header.diaChi()), normalFont);
@@ -80,7 +84,7 @@ public class InvoicePdfService {
       addInfoLine(
           document, "Phương thức", formatPaymentMethod(header.phuongThucThanhToan()), normalFont);
 
-      addEmptyLine(document, 8);
+        addEmptyLine(document, 2);
 
       PdfPTable table = new PdfPTable(4);
       table.setWidthPercentage(100);
@@ -100,7 +104,7 @@ public class InvoicePdfService {
 
       document.add(table);
 
-      addEmptyLine(document, 8);
+        addEmptyLine(document, 2);
 
       PdfPTable totalTable = new PdfPTable(2);
       totalTable.setWidthPercentage(100);
@@ -109,19 +113,19 @@ public class InvoicePdfService {
       PdfPCell totalLabel = new PdfPCell(new Phrase("TỔNG THANH TOÁN", boldFont));
       totalLabel.setBorder(Rectangle.NO_BORDER);
       totalLabel.setHorizontalAlignment(Element.ALIGN_LEFT);
-      totalLabel.setPadding(4);
+      totalLabel.setPadding(2);
 
       PdfPCell totalValue = new PdfPCell(new Phrase(formatMoney(header.tongThanhToan()), boldFont));
       totalValue.setBorder(Rectangle.NO_BORDER);
       totalValue.setHorizontalAlignment(Element.ALIGN_RIGHT);
-      totalValue.setPadding(4);
+      totalValue.setPadding(2);
 
       totalTable.addCell(totalLabel);
       totalTable.addCell(totalValue);
 
       document.add(totalTable);
 
-      addEmptyLine(document, 10);
+        addEmptyLine(document, 2);
       addCentered(document, "Cảm ơn quý khách!", normalFont);
       addCentered(document, "Hẹn gặp lại.", smallFont);
 
@@ -141,7 +145,7 @@ public class InvoicePdfService {
       byte[] fontBytes = vietnameseFontResource.getInputStream().readAllBytes();
 
       return BaseFont.createFont(
-          "DejaVuSans.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, fontBytes, null);
+          "NotoSans-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, fontBytes, null);
     } catch (Exception ex) {
       try {
         return BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
@@ -171,21 +175,21 @@ public class InvoicePdfService {
     document.add(paragraph);
   }
 
-  private void addHeaderCell(PdfPTable table, String text, Font font) {
-    PdfPCell cell = new PdfPCell(new Phrase(text, font));
-    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-    cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-    cell.setPadding(4);
-    table.addCell(cell);
-  }
+    private void addHeaderCell(PdfPTable table, String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPadding(2);
+        table.addCell(cell);
+    }
 
-  private void addBodyCell(PdfPTable table, String text, Font font, int alignment) {
-    PdfPCell cell = new PdfPCell(new Phrase(safe(text), font));
-    cell.setHorizontalAlignment(alignment);
-    cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-    cell.setPadding(4);
-    table.addCell(cell);
-  }
+    private void addBodyCell(PdfPTable table, String text, Font font, int alignment) {
+        PdfPCell cell = new PdfPCell(new Phrase(safe(text), font));
+        cell.setHorizontalAlignment(alignment);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPadding(2);
+        table.addCell(cell);
+    }
 
   private String formatMoney(BigDecimal value) {
     if (value == null) {
