@@ -210,10 +210,10 @@ public class PosController {
       @Parameter(hidden = true) @RequestHeader(value = "Authorization", required = false)
           String authHeader,
       @PathVariable Long maHoaDon) {
-    authGuard.requirePermission(authHeader, "ORDER:VIEW");
+    SessionUser user = authGuard.requirePermission(authHeader, "ORDER:VIEW");
 
     return ResponseEntity.ok(
-        BaseResponse.ok("Lấy chi tiết hóa đơn POS thành công", posService.getOrder(maHoaDon)));
+        BaseResponse.ok("Lấy chi tiết hóa đơn POS thành công", posService.getOrder(maHoaDon, user)));
   }
 
   @Operation(
@@ -267,10 +267,10 @@ public class PosController {
       @Parameter(hidden = true) @RequestHeader(value = "Authorization", required = false)
           String authHeader,
       @PathVariable Long maHoaDon) {
-    authGuard.requirePermission(authHeader, "ORDER:PAY");
+    SessionUser user = authGuard.requirePermission(authHeader, "ORDER:PAY");
 
     return ResponseEntity.ok(
-        BaseResponse.ok("Thanh toán tiền mặt thành công", posService.payCash(maHoaDon)));
+        BaseResponse.ok("Thanh toán tiền mặt thành công", posService.payCash(maHoaDon, user)));
   }
 
   @Operation(
@@ -313,10 +313,10 @@ public class PosController {
       @Parameter(hidden = true) @RequestHeader(value = "Authorization", required = false)
           String authHeader,
       @PathVariable Long maHoaDon) {
-    authGuard.requirePermission(authHeader, "ORDER:PAY");
+    SessionUser user = authGuard.requirePermission(authHeader, "ORDER:PAY");
 
     return ResponseEntity.ok(
-        BaseResponse.ok("Tao QR chuyen khoan payOS thanh cong", posService.createBankQr(maHoaDon)));
+        BaseResponse.ok("Tao QR chuyen khoan payOS thanh cong", posService.createBankQr(maHoaDon, user)));
   }
 
   @Operation(
@@ -357,10 +357,10 @@ public class PosController {
       @Parameter(hidden = true) @RequestHeader(value = "Authorization", required = false)
           String authHeader,
       @PathVariable Long maHoaDon) {
-    authGuard.requirePermission(authHeader, "ORDER:CANCEL");
+    SessionUser user = authGuard.requirePermission(authHeader, "ORDER:CANCEL");
 
     return ResponseEntity.ok(
-        BaseResponse.ok("Huy hoa don POS thanh cong", posService.cancelOrder(maHoaDon)));
+        BaseResponse.ok("Huy hoa don POS thanh cong", posService.cancelOrder(maHoaDon, user)));
   }
 
   @Operation(
@@ -408,7 +408,8 @@ public class PosController {
       @Parameter(description = "Mã hóa đơn POS cần in", example = "361", required = true)
           @PathVariable
           Long maHoaDon) {
-    authGuard.requirePermission(authHeader, "ORDER:VIEW");
+    SessionUser user = authGuard.requirePermission(authHeader, "ORDER:VIEW");
+    posService.requireOrderAccess(maHoaDon, user);
 
     byte[] pdfBytes = invoicePdfService.generateInvoicePdf(maHoaDon);
 

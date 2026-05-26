@@ -131,7 +131,7 @@ public class QuanLyNguyenLieuFrame extends JFrame {
     backButton.setIcon(IconLoader.svg("icons/nhap-kho/left.svg", 16, 18));
     backButton.setIconTextGap(8);
     backButton.setHorizontalAlignment(SwingConstants.CENTER);
-    backButton.setBounds(1250, 34, 110, 34);
+    backButton.setBounds(1285, 34, 110, 34);
     backButton.addActionListener(
         e -> {
           new KhoMenuFrame().setVisible(true);
@@ -775,7 +775,8 @@ public class QuanLyNguyenLieuFrame extends JFrame {
 
   private static class OutlinedInputPanel extends JPanel {
     OutlinedInputPanel() {
-      setOpaque(false);
+        setOpaque(false);
+        setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 10));
     }
 
     @Override
@@ -795,7 +796,7 @@ public class QuanLyNguyenLieuFrame extends JFrame {
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       g2.setColor(BORDER);
       g2.setStroke(new BasicStroke(1.2f));
-      g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+      g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 10, 10);
       g2.dispose();
     }
   }

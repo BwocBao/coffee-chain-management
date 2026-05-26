@@ -147,7 +147,7 @@ public class TraCuuLichSuKhoFrame extends JFrame {
     backButton.setIcon(IconLoader.svg("icons/nhap-kho/left.svg", 16, 18));
     backButton.setIconTextGap(8);
     backButton.setHorizontalAlignment(SwingConstants.CENTER);
-    backButton.setBounds(1250, 30, 110, 34);
+    backButton.setBounds(1285, 30, 110, 34);
     backButton.addActionListener(
         e -> {
           new KhoMenuFrame().setVisible(true);
@@ -204,10 +204,10 @@ public class TraCuuLichSuKhoFrame extends JFrame {
 
   private void buildSummaryCards() {
     addMetricCard("Số giao dịch", transactionCountValue, 44, 280);
-    addMetricCard("Tổng nhập", importValue, 314, 280);
-    addMetricCard("Tổng xuất", exportValue, 584, 280);
-    addMetricCard("Điều chuyển", transferValue, 854, 280);
-    addMetricCard("Biến động ròng", netChangeValue, 1124, 280);
+    addMetricCard("Tổng nhập", importValue, 318, 280);
+    addMetricCard("Tổng xuất", exportValue, 598, 280);
+    addMetricCard("Điều chuyển", transferValue, 878, 280);
+    addMetricCard("Biến động ròng", netChangeValue, 1158, 280);
   }
 
   private void addMetricCard(String label, JLabel valueLabel, int x, int y) {
@@ -748,7 +748,8 @@ public class TraCuuLichSuKhoFrame extends JFrame {
 
   private static class OutlinedInputPanel extends JPanel {
     OutlinedInputPanel() {
-      setOpaque(false);
+        setOpaque(false);
+        setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 10));
     }
 
     @Override
@@ -768,7 +769,7 @@ public class TraCuuLichSuKhoFrame extends JFrame {
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       g2.setColor(FIELD_BORDER);
       g2.setStroke(new BasicStroke(1.2f));
-      g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+      g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 10, 10);
       g2.dispose();
     }
   }

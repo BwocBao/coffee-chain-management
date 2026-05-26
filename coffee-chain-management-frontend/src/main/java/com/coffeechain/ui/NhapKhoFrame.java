@@ -156,7 +156,7 @@ public class NhapKhoFrame extends JFrame {
     backButton.setIconTextGap(8);
     backButton.setHorizontalAlignment(SwingConstants.CENTER);
 
-    backButton.setBounds(1250, 30, 110, 34);
+    backButton.setBounds(1285, 30, 110, 34);
     backButton.addActionListener(
         e -> {
           new KhoMenuFrame().setVisible(true);
@@ -304,11 +304,11 @@ public class NhapKhoFrame extends JFrame {
 
     addLabel(detailCard, "Hạn sử dụng:", 930, 12, 120, 18);
     addField(
-        detailCard, expiryField, 930, 34, 140, 30, true, EXPIRY_PLACEHOLDER, new ClockLineIcon());
+        detailCard, expiryField, 930, 34, 160, 30, true, EXPIRY_PLACEHOLDER, new ClockLineIcon());
     installPlaceholder(expiryField, EXPIRY_PLACEHOLDER);
 
     RoundedButton addToListButton = primaryButton("Thêm vào phiếu");
-    addToListButton.setBounds(1130, 34, 150, 30);
+    addToListButton.setBounds(1150, 34, 150, 30);
     addToListButton.addActionListener(e -> addLine());
     detailCard.add(addToListButton);
   }
@@ -941,6 +941,7 @@ public class NhapKhoFrame extends JFrame {
 
     OutlinedInputPanel() {
       setOpaque(false);
+        setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 10));
     }
 
     @Override
@@ -960,7 +961,8 @@ public class NhapKhoFrame extends JFrame {
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       g2.setColor(FIELD_BORDER);
       g2.setStroke(new BasicStroke(1.2f));
-      g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+//      g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+        g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 10, 10);
       g2.dispose();
     }
   }

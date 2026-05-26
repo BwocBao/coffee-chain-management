@@ -211,7 +211,7 @@ public class XuatKhoFrame extends JFrame {
     backButton.setIcon(backIcon);
     backButton.setIconTextGap(8);
     backButton.setHorizontalAlignment(SwingConstants.CENTER);
-    backButton.setBounds(1220, 30, 110, 34);
+    backButton.setBounds(1285, 30, 110, 34);
     backButton.addActionListener(
         e -> {
           new KhoMenuFrame().setVisible(true);
@@ -1490,6 +1490,7 @@ public class XuatKhoFrame extends JFrame {
   private static class OutlinedInputPanel extends JPanel {
     OutlinedInputPanel() {
       setOpaque(false);
+        setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 10));
     }
 
     @Override
@@ -1509,7 +1510,8 @@ public class XuatKhoFrame extends JFrame {
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       g2.setColor(FIELD_BORDER);
       g2.setStroke(new BasicStroke(1.2f));
-      g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+//      g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+        g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 10, 10);
       g2.dispose();
     }
   }

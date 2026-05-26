@@ -91,7 +91,7 @@ public class MenuTongFrame extends JFrame {
     }
 
     if (PermissionUtil.hasAny(
-        "ORDER:VIEW", "ORDER:CREATE", "ORDER:PAY", "PRODUCT:VIEW", "PRODUCT:CREATE")) {
+        "ORDER:VIEW", "ORDER:CREATE", "ORDER:PAY", "PRODUCT:VIEW")) {
       items.add(
           new MenuItem(
               "Quản lý POS",
@@ -109,7 +109,7 @@ public class MenuTongFrame extends JFrame {
               () -> FrameNavigator.open(this, new QuanTriHeThongFrame())));
     }
 
-    if (PermissionUtil.hasAny("BRANCH:VIEW", "BRANCH:CREATE", "BRANCH:UPDATE", "BRANCH:DELETE")) {
+    if (PermissionUtil.hasAny("BRANCH:VIEW", "BRANCH:CREATE", "BRANCH:UPDATE")) {
       items.add(
           new MenuItem(
               "Quản lý chi nhánh",

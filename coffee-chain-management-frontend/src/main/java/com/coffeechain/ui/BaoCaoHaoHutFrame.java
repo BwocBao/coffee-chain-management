@@ -138,8 +138,18 @@ public class BaoCaoHaoHutFrame extends JFrame {
 
     pack();
     setLocationRelativeTo(null);
+      setupColumnWidths();
   }
+    private void setupColumnWidths() {
+        // Bảng lô hàng còn tồn bên trái
+        lotTable.getColumnModel().getColumn(0).setPreferredWidth(40); // Mã lô
+        lotTable.getColumnModel().getColumn(1).setPreferredWidth(180); // Nguyên liệu
+        lotTable.getColumnModel().getColumn(2).setPreferredWidth(40); // DVT
+        lotTable.getColumnModel().getColumn(3).setPreferredWidth(90); // Còn Lại
+        lotTable.getColumnModel().getColumn(4).setPreferredWidth(110); // Hạn sử dụng
+        lotTable.getColumnModel().getColumn(4).setPreferredWidth(70); // Trạng thái
 
+    }
   private void buildHeader() {
     JLabel title = new JLabel("BÁO CÁO HAO HỤT");
     title.setBounds(44, 22, 520, 40);
@@ -151,7 +161,7 @@ public class BaoCaoHaoHutFrame extends JFrame {
     backButton.setIcon(IconLoader.svg("icons/nhap-kho/left.svg", 16, 18));
     backButton.setIconTextGap(8);
     backButton.setHorizontalAlignment(SwingConstants.CENTER);
-    backButton.setBounds(1250, 30, 110, 34);
+    backButton.setBounds(1285, 30, 110, 34);
     backButton.addActionListener(
         e -> {
           new KhoMenuFrame().setVisible(true);
@@ -240,20 +250,20 @@ public class BaoCaoHaoHutFrame extends JFrame {
     root.add(card);
 
     addLabel(card, "Lô hàng:", 20, 12, 120, 18);
-    addCombo(card, lotCombo, 20, 34, 220, 30);
+    addCombo(card, lotCombo, 20, 34, 150, 30);
     lotCombo.setRenderer(new WastageLotComboRenderer());
 
-    addLabel(card, "Loại hao hụt:", 280, 12, 140, 18);
-    addCombo(card, detailWastageTypeCombo, 280, 34, 190, 30);
+    addLabel(card, "Loại hao hụt:", 210, 12, 140, 18);
+    addCombo(card, detailWastageTypeCombo, 210, 34, 190, 30);
 
-    addLabel(card, "Số lượng hao hụt:", 510, 12, 140, 18);
-    addField(card, quantityField, 510, 34, 150, 30, true, "0");
+    addLabel(card, "Số lượng hao hụt:", 430, 12, 140, 18);
+    addField(card, quantityField, 430, 34, 150, 30, true, "0");
 
-    addLabel(card, "Số lượng còn lại:", 700, 12, 140, 18);
-    addField(card, remainingField, 700, 34, 150, 30, false, "0");
+    addLabel(card, "Số lượng còn lại:", 610, 12, 140, 18);
+    addField(card, remainingField, 610, 34, 150, 30, false, "0");
 
-    addLabel(card, "Hạn sử dụng:", 890, 12, 120, 18);
-    addField(card, expiryField, 890, 34, 150, 30, false, "yyyy-MM-dd");
+    addLabel(card, "Hạn sử dụng:", 790, 12, 120, 18);
+    addField(card, expiryField, 790, 34, 150, 30, false, "yyyy-MM-dd");
 
     RoundedButton reloadButton = secondaryButton("Tải lại lô");
     reloadButton.setBounds(1080, 34, 110, 30);
@@ -883,11 +893,7 @@ public class BaoCaoHaoHutFrame extends JFrame {
       if (value instanceof WastageLotDto lot) {
         label.setText(
             "Lô #"
-                + lot.getMaLoHang()
-                + " - còn "
-                + formatNumber(lot.getSoLuongConLai())
-                + " "
-                + valueOrDash(lot.getDonViTinh()));
+                + lot.getMaLoHang());
       }
       label.setFont(UiTheme.regular(14));
       label.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 28));
@@ -899,7 +905,8 @@ public class BaoCaoHaoHutFrame extends JFrame {
 
   private static class OutlinedInputPanel extends JPanel {
     OutlinedInputPanel() {
-      setOpaque(false);
+        setOpaque(false);
+        setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 10));
     }
 
     @Override
@@ -919,7 +926,7 @@ public class BaoCaoHaoHutFrame extends JFrame {
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       g2.setColor(FIELD_BORDER);
       g2.setStroke(new BasicStroke(1.2f));
-      g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+      g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 10, 10);
       g2.dispose();
     }
   }

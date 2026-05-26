@@ -54,12 +54,12 @@ public class StocktakeService {
                 null,
                 ADJUST_STOCK,
                 "Điều chỉnh tồn",
-                "Cập nhật lô và tồn kho theo số lượng thực tế"),
+                "Cộng tồn kho theo số lượng thực tế"),
             new StocktakeLookupResponse.OptionDto(
                 null,
                 CREATE_WASTAGE,
                 "Tạo hao hụt",
-                "Ghi nhận phần thiếu hụt thành phiếu hao hụt")));
+                "Trừ tồn kho theo hao hụt")));
 
     response.setStatuses(
         List.of(

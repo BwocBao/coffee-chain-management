@@ -204,11 +204,6 @@ public class QuanLyCongThucFrame extends JFrame {
     addLabel(card, "Trạng thái", 350, 114, 100, 20);
     addCombo(card, statusCombo, 350, 138, 180, 34);
     addLabel(card, "Tên sản phẩm", 20, 114, 120, 20);
-    addFieldPanel(card, productNameField, 20, 138, 22, 34);
-    //        addLabel(card, "Giá bán", 262, 114, 90, 20);
-    //        addFieldPanel(card, priceField, 262, 138, 110, 34);
-    //        addLabel(card, "Trạng thái", 394, 114, 100, 20);
-    //        addCombo(card, statusCombo, 394, 138, 150, 34);
     addLabel(card, "Hình ảnh", 590, 50, 120, 20);
     imagePreview.setBounds(590, 74, 122, 128);
     imagePreview.addMouseListener(

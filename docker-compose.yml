@@ -1,0 +1,66 @@
+services:
+  oracle-db:
+    image: gvenzl/oracle-xe:21-slim
+    container_name: coffee-chain-oracle
+    restart: unless-stopped
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+      APP_USER: ${APP_DB_USERNAME}
+      APP_USER_PASSWORD: ${APP_DB_PASSWORD}
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./docker/oracle/init/01-init-cafe-app.sh:/container-entrypoint-initdb.d/01-init-cafe-app.sh:ro
+      - ./quan_ly_chuoi_cafe_phung_loc.sql:/container-entrypoint-initdb.d/schema.run:ro
+      - ./seed.sql:/container-entrypoint-initdb.d/seed.run:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  backend:
+    build:
+      context: ./coffee-chain-management-backend
+    container_name: coffee-chain-backend
+    restart: unless-stopped
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:oracle:thin:@oracle-db:1521/XEPDB1
+      DB_USERNAME: ${APP_DB_USERNAME}
+      DB_PASSWORD: ${APP_DB_PASSWORD}
+
+      DEFAULT_ADMIN_USERNAME: ${DEFAULT_ADMIN_USERNAME}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD}
+      DEFAULT_ADMIN_EMAIL: ${DEFAULT_ADMIN_EMAIL}
+
+      MAIL_ENABLED: ${MAIL_ENABLED}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+
+      PASSWORD_RESET_CODE_MINUTES: ${PASSWORD_RESET_CODE_MINUTES}
+      PASSWORD_RESET_MAX_ATTEMPTS: ${PASSWORD_RESET_MAX_ATTEMPTS}
+      PASSWORD_RESET_RETURN_CODE: ${PASSWORD_RESET_RETURN_CODE}
+
+      PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID}
+      PAYOS_API_KEY: ${PAYOS_API_KEY}
+      PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY}
+      PAYOS_RETURN_URL: ${PAYOS_RETURN_URL}
+      PAYOS_CANCEL_URL: ${PAYOS_CANCEL_URL}
+
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      CLOUDINARY_FOLDER: ${CLOUDINARY_FOLDER}
+    ports:
+      - "8080:8080"
+
+volumes:
+  oracle-data:

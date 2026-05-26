@@ -95,14 +95,6 @@ MERGE INTO QUYEN q USING (SELECT 'USER' module, 'CREATE' action, 'Tạo người
 ON (q.ma_chuc_nang = (SELECT ma_chuc_nang FROM CHUCNANG WHERE ten_chuc_nang = s.module) AND q.hanh_dong = s.action)
 WHEN MATCHED THEN UPDATE SET q.ten_quyen = s.name
 WHEN NOT MATCHED THEN INSERT (ma_chuc_nang, hanh_dong, ten_quyen) VALUES ((SELECT ma_chuc_nang FROM CHUCNANG WHERE ten_chuc_nang = s.module), s.action, s.name);
-MERGE INTO QUYEN q USING (SELECT 'USER' module, 'UPDATE' action, 'Sửa người dùng' name FROM dual) s
-ON (q.ma_chuc_nang = (SELECT ma_chuc_nang FROM CHUCNANG WHERE ten_chuc_nang = s.module) AND q.hanh_dong = s.action)
-WHEN MATCHED THEN UPDATE SET q.ten_quyen = s.name
-WHEN NOT MATCHED THEN INSERT (ma_chuc_nang, hanh_dong, ten_quyen) VALUES ((SELECT ma_chuc_nang FROM CHUCNANG WHERE ten_chuc_nang = s.module), s.action, s.name);
-MERGE INTO QUYEN q USING (SELECT 'USER' module, 'DELETE' action, 'Xóa người dùng' name FROM dual) s
-ON (q.ma_chuc_nang = (SELECT ma_chuc_nang FROM CHUCNANG WHERE ten_chuc_nang = s.module) AND q.hanh_dong = s.action)
-WHEN MATCHED THEN UPDATE SET q.ten_quyen = s.name
-WHEN NOT MATCHED THEN INSERT (ma_chuc_nang, hanh_dong, ten_quyen) VALUES ((SELECT ma_chuc_nang FROM CHUCNANG WHERE ten_chuc_nang = s.module), s.action, s.name);
 
 MERGE INTO QUYEN q USING (SELECT 'ROLE' module, 'VIEW' action, 'Xem vai trò' name FROM dual) s
 ON (q.ma_chuc_nang = (SELECT ma_chuc_nang FROM CHUCNANG WHERE ten_chuc_nang = s.module) AND q.hanh_dong = s.action)
@@ -136,9 +128,6 @@ WHEN NOT MATCHED THEN INSERT (ma_chuc_nang, hanh_dong, ten_quyen) VALUES ((SELEC
 
 MERGE INTO QUYEN q USING (SELECT module, action, name FROM (
     SELECT 'PRODUCT' module, 'VIEW' action, 'Xem sản phẩm' name FROM dual UNION ALL
-    SELECT 'PRODUCT', 'CREATE', 'Tạo sản phẩm' FROM dual UNION ALL
-    SELECT 'PRODUCT', 'UPDATE', 'Sửa sản phẩm' FROM dual UNION ALL
-    SELECT 'PRODUCT', 'DELETE', 'Xóa sản phẩm' FROM dual UNION ALL
     SELECT 'RECIPE', 'VIEW', 'Xem công thức' FROM dual UNION ALL
     SELECT 'RECIPE', 'MANAGE', 'Quản lý công thức' FROM dual UNION ALL
     SELECT 'INGREDIENT', 'VIEW', 'Xem nguyên liệu' FROM dual UNION ALL
@@ -162,13 +151,11 @@ MERGE INTO QUYEN q USING (SELECT module, action, name FROM (
     SELECT 'STOCKTAKE', 'MANAGE', 'Quản lý phiếu kiểm kho' FROM dual UNION ALL
     SELECT 'WASTAGE', 'VIEW', 'Xem hao hụt' FROM dual UNION ALL
     SELECT 'WASTAGE', 'CREATE', 'Báo hao hụt' FROM dual UNION ALL
-    SELECT 'WASTAGE', 'UPDATE', 'Sửa hao hụt' FROM dual UNION ALL
     SELECT 'ORDER', 'VIEW', 'Xem đơn hàng' FROM dual UNION ALL
     SELECT 'ORDER', 'CREATE', 'Tạo đơn hàng' FROM dual UNION ALL
     SELECT 'ORDER', 'PAY', 'Thanh toán đơn' FROM dual UNION ALL
     SELECT 'ORDER', 'CANCEL', 'Hủy đơn hàng' FROM dual UNION ALL
-    SELECT 'ORDER', 'REFUND', 'Hoàn tiền đơn' FROM dual UNION ALL
-    SELECT 'REPORT', 'VIEW', 'Xem báo cáo' FROM dual UNION ALL
+    SELECT 'REPORT', 'VIEW', 'Xem bao cao thong ke' FROM dual UNION ALL
     SELECT 'UNIT', 'VIEW', 'Xem đơn vị tính' FROM dual UNION ALL
     SELECT 'UNIT', 'CREATE', 'Tạo đơn vị tính' FROM dual UNION ALL
     SELECT 'UNIT', 'UPDATE', 'Sửa đơn vị tính' FROM dual UNION ALL
@@ -178,6 +165,33 @@ ON (q.ma_chuc_nang = (SELECT ma_chuc_nang FROM CHUCNANG WHERE ten_chuc_nang = s.
 WHEN MATCHED THEN UPDATE SET q.ten_quyen = s.name
 WHEN NOT MATCHED THEN INSERT (ma_chuc_nang, hanh_dong, ten_quyen)
 VALUES ((SELECT ma_chuc_nang FROM CHUCNANG WHERE ten_chuc_nang = s.module), s.action, s.name);
+
+-------------------------------------------------------------------------------
+-- 3.1. Don quyen khong con dung
+-------------------------------------------------------------------------------
+DELETE FROM VAITRO_QUYEN
+WHERE ma_quyen IN (
+    SELECT q.ma_quyen
+    FROM QUYEN q
+    JOIN CHUCNANG cn ON cn.ma_chuc_nang = q.ma_chuc_nang
+    WHERE (cn.ten_chuc_nang = 'ORDER' AND q.hanh_dong = 'REFUND')
+       OR (cn.ten_chuc_nang = 'PRODUCT' AND q.hanh_dong IN ('CREATE','UPDATE','DELETE'))
+       OR (cn.ten_chuc_nang = 'USER' AND q.hanh_dong IN ('UPDATE','DELETE'))
+       OR (cn.ten_chuc_nang = 'WASTAGE' AND q.hanh_dong = 'UPDATE')
+);
+
+DELETE FROM QUYEN q
+WHERE EXISTS (
+    SELECT 1
+    FROM CHUCNANG cn
+    WHERE cn.ma_chuc_nang = q.ma_chuc_nang
+      AND (
+          (cn.ten_chuc_nang = 'ORDER' AND q.hanh_dong = 'REFUND')
+       OR (cn.ten_chuc_nang = 'PRODUCT' AND q.hanh_dong IN ('CREATE','UPDATE','DELETE'))
+       OR (cn.ten_chuc_nang = 'USER' AND q.hanh_dong IN ('UPDATE','DELETE'))
+       OR (cn.ten_chuc_nang = 'WASTAGE' AND q.hanh_dong = 'UPDATE')
+      )
+);
 
 -------------------------------------------------------------------------------
 -- 4. Gan quyen cho vai tro
@@ -192,6 +206,25 @@ WHERE vt.ten_vai_tro = 'ADMIN'
       WHERE x.ma_vai_tro = vt.ma_vai_tro AND x.ma_quyen = q.ma_quyen
   );
 
+-- Don quyen cu khong con thuoc cac vai tro nghiep vu
+DELETE FROM VAITRO_QUYEN vtq
+WHERE EXISTS (
+    SELECT 1
+    FROM VAITRO vt
+    JOIN QUYEN q ON q.ma_quyen = vtq.ma_quyen
+    JOIN CHUCNANG cn ON cn.ma_chuc_nang = q.ma_chuc_nang
+    WHERE vt.ma_vai_tro = vtq.ma_vai_tro
+      AND (
+          (vt.ten_vai_tro = 'QUAN_LY_KHO'
+           AND ((cn.ten_chuc_nang = 'PRODUCT' AND q.hanh_dong = 'VIEW')
+             OR (cn.ten_chuc_nang = 'ORDER' AND q.hanh_dong = 'VIEW')
+             OR (cn.ten_chuc_nang = 'REPORT' AND q.hanh_dong = 'VIEW')))
+       OR (vt.ten_vai_tro IN ('QUAN_LY_CHI_NHANH','THU_NGAN')
+           AND cn.ten_chuc_nang = 'REPORT'
+           AND q.hanh_dong = 'VIEW')
+      )
+);
+
 -- QUAN_LY_KHO
 INSERT INTO VAITRO_QUYEN (ma_vai_tro, ma_quyen)
 SELECT vt.ma_vai_tro, q.ma_quyen
@@ -202,14 +235,11 @@ WHERE vt.ten_vai_tro = 'QUAN_LY_KHO'
   AND (
       (cn.ten_chuc_nang = 'INVENTORY' AND q.hanh_dong IN ('VIEW','IMPORT','EXPORT','TRANSFER','ADJUST'))
       OR (cn.ten_chuc_nang = 'STOCKTAKE' AND q.hanh_dong IN ('VIEW','MANAGE'))
-      OR (cn.ten_chuc_nang = 'WASTAGE' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE'))
-      OR (cn.ten_chuc_nang = 'SUPPLIER' AND q.hanh_dong IN ('VIEW'))
-      OR (cn.ten_chuc_nang = 'INGREDIENT' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE'))
-      OR (cn.ten_chuc_nang = 'PRODUCT' AND q.hanh_dong IN ('VIEW'))
-      OR (cn.ten_chuc_nang = 'ORDER' AND q.hanh_dong IN ('VIEW'))
-      OR (cn.ten_chuc_nang = 'REPORT' AND q.hanh_dong IN ('VIEW'))
+      OR (cn.ten_chuc_nang = 'WASTAGE' AND q.hanh_dong IN ('VIEW','CREATE'))
+      OR (cn.ten_chuc_nang = 'SUPPLIER' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE','DELETE'))
+      OR (cn.ten_chuc_nang = 'INGREDIENT' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE','DELETE'))
       OR (cn.ten_chuc_nang = 'BRANCH' AND q.hanh_dong IN ('VIEW'))
-      OR (cn.ten_chuc_nang = 'UNIT' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE'))
+      OR (cn.ten_chuc_nang = 'UNIT' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE','DELETE'))
       OR (cn.ten_chuc_nang = 'WAREHOUSE' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE','DELETE'))
   )
   AND NOT EXISTS (
@@ -229,11 +259,10 @@ WHERE vt.ten_vai_tro = 'QUAN_LY_CHI_NHANH'
       OR (cn.ten_chuc_nang = 'BRANCH' AND q.hanh_dong IN ('VIEW'))
       OR (cn.ten_chuc_nang = 'INVENTORY' AND q.hanh_dong IN ('VIEW'))
       OR (cn.ten_chuc_nang = 'STOCKTAKE' AND q.hanh_dong IN ('VIEW','MANAGE'))
-      OR (cn.ten_chuc_nang = 'WASTAGE' AND q.hanh_dong IN ('VIEW','CREATE','UPDATE'))
-      OR (cn.ten_chuc_nang = 'ORDER' AND q.hanh_dong IN ('VIEW','CREATE','CANCEL','REFUND'))
+      OR (cn.ten_chuc_nang = 'WASTAGE' AND q.hanh_dong IN ('VIEW','CREATE'))
+      OR (cn.ten_chuc_nang = 'ORDER' AND q.hanh_dong IN ('VIEW','CREATE','PAY','CANCEL'))
       OR (cn.ten_chuc_nang = 'INGREDIENT' AND q.hanh_dong IN ('VIEW'))
       OR (cn.ten_chuc_nang = 'PRODUCT' AND q.hanh_dong IN ('VIEW'))
-      OR (cn.ten_chuc_nang = 'REPORT' AND q.hanh_dong IN ('VIEW'))
       OR (cn.ten_chuc_nang = 'UNIT' AND q.hanh_dong IN ('VIEW'))
       OR (cn.ten_chuc_nang = 'RECIPE' AND q.hanh_dong IN ('VIEW'))
   )

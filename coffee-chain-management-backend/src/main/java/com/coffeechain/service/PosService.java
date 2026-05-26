@@ -42,12 +42,14 @@ public class PosService {
     validateCreateOrderRequest(request);
 
     if (!posRepository.branchExists(request.maChiNhanh())) {
-      throw new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy chi nhánh đang hoạt động");
+      throw new AppException(HttpStatus.NOT_FOUND, "Khong tim thay chi nhanh dang hoat dong");
     }
 
     if (!posRepository.posBelongsToBranch(request.maPos(), request.maChiNhanh())) {
-      throw new AppException(HttpStatus.BAD_REQUEST, "Máy POS không thuộc chi nhánh đã chọn");
+      throw new AppException(HttpStatus.BAD_REQUEST, "May POS khong thuoc chi nhanh da chon");
     }
+
+    validateBranchScope(user, request.maChiNhanh());
 
     BigDecimal total = BigDecimal.ZERO;
     Set<Long> productIds = new HashSet<>();
@@ -55,14 +57,14 @@ public class PosService {
     for (PosOrderItemRequest item : request.items()) {
       if (!productIds.add(item.maSanPham())) {
         throw new AppException(
-            HttpStatus.BAD_REQUEST, "Một sản phẩm không được nhập lặp trong cùng hóa đơn");
+            HttpStatus.BAD_REQUEST, "Mot san pham khong duoc nhap lap trong cung hoa don");
       }
 
       ProductOrderRow product = posRepository.findProductForOrder(item.maSanPham());
       if (product == null) {
         throw new AppException(
             HttpStatus.BAD_REQUEST,
-            "Sản phẩm không khả dụng hoặc chưa có công thức: " + item.maSanPham());
+            "San pham khong kha dung hoac chua co cong thuc: " + item.maSanPham());
       }
 
       total = total.add(product.giaBanHienTai().multiply(BigDecimal.valueOf(item.soLuong())));
@@ -77,15 +79,72 @@ public class PosService {
       posRepository.createOrderDetail(maHoaDon, item, product.giaBanHienTai());
     }
 
-    return getOrder(maHoaDon);
+    return getOrder(maHoaDon, user);
   }
 
-  public PosOrderResponse getOrder(Long maHoaDon) {
-    OrderRow order =
-        posRepository
-            .findOrder(maHoaDon)
-            .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy hóa đơn"));
+  public PosOrderResponse getOrder(Long maHoaDon, SessionUser user) {
+    OrderRow order = findOrderOrThrow(maHoaDon);
+    validateBranchScope(user, order.maChiNhanh());
+    return buildOrderResponse(order);
+  }
 
+  public void requireOrderAccess(Long maHoaDon, SessionUser user) {
+    OrderRow order = findOrderOrThrow(maHoaDon);
+    validateBranchScope(user, order.maChiNhanh());
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public PosOrderResponse payCash(Long maHoaDon, SessionUser user) {
+    OrderRow order = lockOrderOrThrow(maHoaDon);
+    validateBranchScope(user, order.maChiNhanh());
+
+    if (!"PENDING".equals(order.trangThaiHoaDon())
+        || !"PENDING".equals(order.trangThaiThanhToan())) {
+      throw new AppException(HttpStatus.BAD_REQUEST, "Hoa don khong o trang thai cho thanh toan");
+    }
+
+    posRepository.markOrderPaid(maHoaDon, "CASH");
+    deductionService.completePaidOrderAndDeductStock(maHoaDon);
+
+    return getOrder(maHoaDon, user);
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public BankQrResponse createBankQr(Long maHoaDon, SessionUser user) {
+    OrderRow order = findOrderOrThrow(maHoaDon);
+    validateBranchScope(user, order.maChiNhanh());
+    return payOsPaymentService.createBankQr(maHoaDon);
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public PosOrderResponse cancelOrder(Long maHoaDon, SessionUser user) {
+    OrderRow order = lockOrderOrThrow(maHoaDon);
+    validateBranchScope(user, order.maChiNhanh());
+
+    if (!"PENDING".equals(order.trangThaiHoaDon())
+        || !"PENDING".equals(order.trangThaiThanhToan())) {
+      throw new AppException(HttpStatus.BAD_REQUEST, "Chi co the huy hoa don dang cho thanh toan");
+    }
+
+    posRepository.cancelPendingPayOsPaymentForOrder(maHoaDon);
+    posRepository.cancelOrder(maHoaDon);
+    return getOrder(maHoaDon, user);
+  }
+
+  private OrderRow findOrderOrThrow(Long maHoaDon) {
+    return posRepository
+        .findOrder(maHoaDon)
+        .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Khong tim thay hoa don"));
+  }
+
+  private OrderRow lockOrderOrThrow(Long maHoaDon) {
+    return posRepository
+        .lockOrder(maHoaDon)
+        .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Khong tim thay hoa don"));
+  }
+
+  private PosOrderResponse buildOrderResponse(OrderRow order) {
+    Long maHoaDon = order.maHoaDon();
     return new PosOrderResponse(
         order.maHoaDon(),
         order.maChiNhanh(),
@@ -101,70 +160,48 @@ public class PosService {
         posRepository.findLatestPayOsPayment(maHoaDon).orElse(null));
   }
 
-  @Transactional(rollbackFor = Exception.class)
-  public PosOrderResponse payCash(Long maHoaDon) {
-    OrderRow order =
-        posRepository
-            .lockOrder(maHoaDon)
-            .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy hóa đơn"));
-
-    if (!"PENDING".equals(order.trangThaiHoaDon())
-        || !"PENDING".equals(order.trangThaiThanhToan())) {
-      throw new AppException(HttpStatus.BAD_REQUEST, "Hóa đơn không ở trạng thái chờ thanh toán");
+  private void validateBranchScope(SessionUser user, Long maChiNhanh) {
+    if (user == null) {
+      throw new AppException(HttpStatus.UNAUTHORIZED, "Chua dang nhap hoac token het han");
     }
 
-    posRepository.markOrderPaid(maHoaDon, "CASH");
-    deductionService.completePaidOrderAndDeductStock(maHoaDon);
-
-    return getOrder(maHoaDon);
-  }
-
-  @Transactional(rollbackFor = Exception.class)
-  public BankQrResponse createBankQr(Long maHoaDon) {
-    return payOsPaymentService.createBankQr(maHoaDon);
-  }
-
-  @Transactional(rollbackFor = Exception.class)
-  public PosOrderResponse cancelOrder(Long maHoaDon) {
-    OrderRow order =
-        posRepository
-            .lockOrder(maHoaDon)
-            .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Khong tim thay hoa don"));
-
-    if (!"PENDING".equals(order.trangThaiHoaDon())
-        || !"PENDING".equals(order.trangThaiThanhToan())) {
-      throw new AppException(HttpStatus.BAD_REQUEST, "Chi co the huy hoa don dang cho thanh toan");
+    String role = user.getTenVaiTro() == null ? "" : user.getTenVaiTro().trim().toUpperCase();
+    if ("ADMIN".equals(role)) {
+      return;
     }
 
-    posRepository.cancelPendingPayOsPaymentForOrder(maHoaDon);
-    posRepository.cancelOrder(maHoaDon);
-    return getOrder(maHoaDon);
+    Long userBranchId = user.getMaChiNhanh();
+    if (userBranchId != null && userBranchId.equals(maChiNhanh)) {
+      return;
+    }
+
+    throw new AppException(HttpStatus.FORBIDDEN, "Khong duoc thao tac don hang cua chi nhanh khac");
   }
 
   private void validateCreateOrderRequest(CreatePosOrderRequest request) {
     if (request == null) {
-      throw new AppException(HttpStatus.BAD_REQUEST, "Thiếu dữ liệu hóa đơn");
+      throw new AppException(HttpStatus.BAD_REQUEST, "Thieu du lieu hoa don");
     }
 
     if (request.maChiNhanh() == null || request.maChiNhanh() <= 0) {
-      throw new AppException(HttpStatus.BAD_REQUEST, "Mã chi nhánh không hợp lệ");
+      throw new AppException(HttpStatus.BAD_REQUEST, "Ma chi nhanh khong hop le");
     }
 
     if (request.maPos() == null || request.maPos() <= 0) {
-      throw new AppException(HttpStatus.BAD_REQUEST, "Mã POS không hợp lệ");
+      throw new AppException(HttpStatus.BAD_REQUEST, "Ma POS khong hop le");
     }
 
     if (request.items() == null || request.items().isEmpty()) {
-      throw new AppException(HttpStatus.BAD_REQUEST, "Hóa đơn phải có ít nhất một sản phẩm");
+      throw new AppException(HttpStatus.BAD_REQUEST, "Hoa don phai co it nhat mot san pham");
     }
 
     for (PosOrderItemRequest item : request.items()) {
       if (item == null || item.maSanPham() == null || item.maSanPham() <= 0) {
-        throw new AppException(HttpStatus.BAD_REQUEST, "Mã sản phẩm không hợp lệ");
+        throw new AppException(HttpStatus.BAD_REQUEST, "Ma san pham khong hop le");
       }
 
       if (item.soLuong() == null || item.soLuong() <= 0) {
-        throw new AppException(HttpStatus.BAD_REQUEST, "Số lượng sản phẩm phải lớn hơn 0");
+        throw new AppException(HttpStatus.BAD_REQUEST, "So luong san pham phai lon hon 0");
       }
     }
   }

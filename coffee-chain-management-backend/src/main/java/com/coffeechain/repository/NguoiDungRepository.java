@@ -200,6 +200,17 @@ public class NguoiDungRepository {
     jdbcTemplate.update("DELETE FROM QUYEN WHERE ma_quyen = ?", permissionId);
   }
 
+  public void removePermissionFromRole(String tenVaiTro, String module, String action) {
+    Long roleId = findRoleId(tenVaiTro);
+    Long permissionId = findPermissionId(module, action);
+    if (roleId == null || permissionId == null) {
+      return;
+    }
+
+    jdbcTemplate.update(
+        "DELETE FROM VAITRO_QUYEN WHERE ma_vai_tro = ? AND ma_quyen = ?", roleId, permissionId);
+  }
+
   public void assignPermissionToRole(Long maVaiTro, Long maQuyen) {
     Integer count =
         jdbcTemplate.queryForObject(

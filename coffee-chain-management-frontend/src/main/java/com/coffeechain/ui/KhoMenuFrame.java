@@ -6,13 +6,11 @@ import com.coffeechain.ui.common.PermissionUtil;
 import com.coffeechain.ui.common.UiTheme;
 import com.coffeechain.ui.common.UserCircle;
 import com.coffeechain.ui.common.icons.BellIcon;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Point;
+
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
@@ -42,6 +40,8 @@ public class KhoMenuFrame extends JFrame {
   private static final int COLS = 4;
 
   private static final String ICON_BACK = "icons/menu-kho/left.svg";
+  // Dien duong dan file .pbix tren may chay frontend, vi du: C:\\reports\\bao-cao-thong-ke.pbix
+  private static final String POWER_BI_REPORT_PATH = "";
 
   private final JPanel contentPanel = new JPanel(null);
   private final List<FeatureMenuCard> menuCards = new ArrayList<>();
@@ -231,7 +231,12 @@ public class KhoMenuFrame extends JFrame {
             "Quản lý đơn vị tính",
             "Gram, ml, cái, chai, gói ...",
             "UNIT:VIEW",
-            "icons/menu-kho/quan-ly-don-vi-tinh.svg"));
+            "icons/menu-kho/quan-ly-don-vi-tinh.svg"),
+        new KhoMenuItem(
+              "Báo cáo thống kê",
+              "Xem dashboard doanh thu, tồn kho",
+              "REPORT:VIEW",
+              "icons/menu-kho/bao-cao-thong-ke.svg"));
   }
 
   private Icon getMenuIcon(KhoMenuItem item) {
@@ -309,13 +314,59 @@ public class KhoMenuFrame extends JFrame {
       dispose();
       return;
     }
+
     if ("icons/menu-kho/quan-ly-nha-cung-cap.svg".equals(item.iconPath())) {
       new QuanLyNhaCungCapFrame().setVisible(true);
       dispose();
       return;
     }
 
+    if ("icons/menu-kho/bao-cao-thong-ke.svg".equals(item.iconPath())) {
+        openPowerBiReportFile();
+        return;
+    }
+
     openPlaceholder(item);
+  }
+
+  private void openPowerBiReportFile() {
+    if (POWER_BI_REPORT_PATH == null || POWER_BI_REPORT_PATH.isBlank()) {
+      JOptionPane.showMessageDialog(
+          this,
+          "Chua cau hinh duong dan file Power BI. Dien duong dan .pbix vao POWER_BI_REPORT_PATH trong KhoMenuFrame.",
+          "Bao cao thong ke",
+          JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    File reportFile = new File(POWER_BI_REPORT_PATH);
+    if (!reportFile.exists() || !reportFile.isFile()) {
+      JOptionPane.showMessageDialog(
+          this,
+          "Khong tim thay file bao cao Power BI: " + reportFile.getAbsolutePath(),
+          "Bao cao thong ke",
+          JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    if (!Desktop.isDesktopSupported()) {
+      JOptionPane.showMessageDialog(
+          this,
+          "May nay khong ho tro mo file truc tiep tu ung dung.",
+          "Bao cao thong ke",
+          JOptionPane.ERROR_MESSAGE);
+      return;
+    }
+
+    try {
+      Desktop.getDesktop().open(reportFile);
+    } catch (Exception e) {
+      JOptionPane.showMessageDialog(
+          this,
+          "Khong mo duoc file Power BI. Kiem tra may da cai Power BI Desktop chua.",
+          "Bao cao thong ke",
+          JOptionPane.ERROR_MESSAGE);
+    }
   }
 
   private void openPlaceholder(KhoMenuItem item) {

@@ -172,9 +172,9 @@ public class XemTonKhoFrame extends JFrame {
 
   private void buildSummaryCards() {
     addMetricCard("Tổng số lượng", totalQtyValue, 44, 112);
-    addMetricCard("Ổn định", stableStockValue, 364, 112);
-    addMetricCard("Tồn thấp", lowStockValue, 684, 112);
-    addMetricCard("Hết hàng", outStockValue, 1004, 112);
+    addMetricCard("Ổn định", stableStockValue, 373, 112);
+    addMetricCard("Tồn thấp", lowStockValue, 709, 112);
+    addMetricCard("Hết hàng", outStockValue, 1045, 112);
   }
 
   private void addMetricCard(String label, JLabel valueLabel, int x, int y) {

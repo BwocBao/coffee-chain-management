@@ -146,9 +146,9 @@ public class TheoDoiHanSuDungFrame extends JFrame {
 
   private void buildSummaryCards() {
     addMetricCard("Tổng số lô", totalLotsValue, 44, 112);
-    addMetricCard("Đang hoạt động", activeLotsValue, 360, 112);
-    addMetricCard("Sắp hết hạn", expiringLotsValue, 676, 112);
-    addMetricCard("Đã hết hạn", expiredLotsValue, 992, 112);
+    addMetricCard("Đang hoạt động", activeLotsValue, 381, 112);
+    addMetricCard("Sắp hết hạn", expiringLotsValue, 717, 112);
+    addMetricCard("Đã hết hạn", expiredLotsValue, 1053, 112);
   }
 
   private void addMetricCard(String label, JLabel valueLabel, int x, int y) {

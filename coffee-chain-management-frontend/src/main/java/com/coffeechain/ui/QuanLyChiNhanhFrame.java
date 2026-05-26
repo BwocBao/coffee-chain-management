@@ -141,9 +141,9 @@ public class QuanLyChiNhanhFrame extends JFrame {
 
   private void buildStats() {
     addStatCard("Tổng chi nhánh", totalValue, 44, 112);
-    addStatCard("Đang hoạt động", activeValue, 386, 112);
-    addStatCard("Đã đóng", closedValue, 728, 112);
-    addStatCard("Bảo trì", maintenanceValue, 1070, 112);
+    addStatCard("Đang hoạt động", activeValue, 395, 112);
+    addStatCard("Đã đóng", closedValue, 746, 112);
+    addStatCard("Bảo trì", maintenanceValue, 1097, 112);
   }
 
   private void addStatCard(String title, JLabel value, int x, int y) {
@@ -689,7 +689,7 @@ public class QuanLyChiNhanhFrame extends JFrame {
       g2.setColor(fill);
       g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, radius, radius);
       g2.setColor(border);
-      g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, radius, radius);
+      g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, radius, radius);
       g2.dispose();
       super.paintComponent(g);
     }
@@ -716,7 +716,8 @@ public class QuanLyChiNhanhFrame extends JFrame {
 
   private static class OutlinedInputPanel extends JPanel {
     OutlinedInputPanel() {
-      setOpaque(false);
+        setOpaque(false);
+        setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 10));
     }
 
     @Override
@@ -736,7 +737,7 @@ public class QuanLyChiNhanhFrame extends JFrame {
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       g2.setColor(BORDER);
       g2.setStroke(new BasicStroke(1.2f));
-      g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+      g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 10, 10);
       g2.dispose();
     }
   }

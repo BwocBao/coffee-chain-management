@@ -42,17 +42,24 @@ public class DataInitializer implements CommandLineRunner {
     nguoiDungRepository.deletePermission("STOCKTAKE", "CREATE");
     nguoiDungRepository.deletePermission("STOCKTAKE", "UPDATE");
     nguoiDungRepository.deletePermission("STOCKTAKE", "DELETE");
+    nguoiDungRepository.deletePermission("ORDER", "REFUND");
+    nguoiDungRepository.deletePermission("PRODUCT", "CREATE");
+    nguoiDungRepository.deletePermission("PRODUCT", "UPDATE");
+    nguoiDungRepository.deletePermission("PRODUCT", "DELETE");
+    nguoiDungRepository.deletePermission("USER", "UPDATE");
+    nguoiDungRepository.deletePermission("USER", "DELETE");
+    nguoiDungRepository.deletePermission("WASTAGE", "UPDATE");
     Map<String, List<String>> seed = new LinkedHashMap<>();
-    seed.put("USER", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
+    seed.put("USER", List.of("VIEW", "CREATE"));
     seed.put("ROLE", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
     seed.put("BRANCH", List.of("VIEW", "CREATE", "UPDATE"));
-    seed.put("PRODUCT", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
+    seed.put("PRODUCT", List.of("VIEW"));
     seed.put("INGREDIENT", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
     seed.put("SUPPLIER", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
     seed.put("INVENTORY", List.of("VIEW", "IMPORT", "EXPORT", "TRANSFER", "ADJUST"));
     seed.put("STOCKTAKE", List.of("VIEW", "MANAGE"));
-    seed.put("WASTAGE", List.of("VIEW", "CREATE", "UPDATE"));
-    seed.put("ORDER", List.of("VIEW", "CREATE", "PAY", "CANCEL", "REFUND"));
+    seed.put("WASTAGE", List.of("VIEW", "CREATE"));
+    seed.put("ORDER", List.of("VIEW", "CREATE", "PAY", "CANCEL"));
     seed.put("REPORT", List.of("VIEW"));
     seed.put("UNIT", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
     seed.put("WAREHOUSE", List.of("VIEW", "CREATE", "UPDATE", "DELETE"));
@@ -68,27 +75,29 @@ public class DataInitializer implements CommandLineRunner {
       }
     }
 
+    nguoiDungRepository.removePermissionFromRole("QUAN_LY_KHO", "PRODUCT", "VIEW");
+    nguoiDungRepository.removePermissionFromRole("QUAN_LY_KHO", "ORDER", "VIEW");
+    nguoiDungRepository.removePermissionFromRole("QUAN_LY_KHO", "REPORT", "VIEW");
+    nguoiDungRepository.removePermissionFromRole("QUAN_LY_CHI_NHANH", "REPORT", "VIEW");
+    nguoiDungRepository.removePermissionFromRole("THU_NGAN", "REPORT", "VIEW");
+
     assign(quanLyKhoRoleId, "INVENTORY", "VIEW", "IMPORT", "EXPORT", "TRANSFER", "ADJUST");
     assign(quanLyKhoRoleId, "STOCKTAKE", "VIEW", "MANAGE");
-    assign(quanLyKhoRoleId, "WASTAGE", "VIEW", "CREATE", "UPDATE");
-    assign(quanLyKhoRoleId, "SUPPLIER", "VIEW");
-    assign(quanLyKhoRoleId, "INGREDIENT", "VIEW", "CREATE", "UPDATE");
-    assign(quanLyKhoRoleId, "PRODUCT", "VIEW");
-    assign(quanLyKhoRoleId, "ORDER", "VIEW");
-    assign(quanLyKhoRoleId, "REPORT", "VIEW");
+    assign(quanLyKhoRoleId, "WASTAGE", "VIEW", "CREATE");
+    assign(quanLyKhoRoleId, "SUPPLIER", "VIEW", "CREATE", "UPDATE", "DELETE");
+    assign(quanLyKhoRoleId, "INGREDIENT", "VIEW", "CREATE", "UPDATE", "DELETE");
     assign(quanLyKhoRoleId, "BRANCH", "VIEW");
-    assign(quanLyKhoRoleId, "UNIT", "VIEW", "CREATE", "UPDATE");
+    assign(quanLyKhoRoleId, "UNIT", "VIEW", "CREATE", "UPDATE", "DELETE");
     assign(quanLyKhoRoleId, "WAREHOUSE", "VIEW", "CREATE", "UPDATE", "DELETE");
 
     assign(quanLyChiNhanhRoleId, "USER", "VIEW", "CREATE");
     assign(quanLyChiNhanhRoleId, "BRANCH", "VIEW");
     assign(quanLyChiNhanhRoleId, "INVENTORY", "VIEW");
     assign(quanLyChiNhanhRoleId, "STOCKTAKE", "VIEW", "MANAGE");
-    assign(quanLyChiNhanhRoleId, "WASTAGE", "VIEW", "CREATE", "UPDATE");
-    assign(quanLyChiNhanhRoleId, "ORDER", "VIEW", "CREATE", "CANCEL", "REFUND");
+    assign(quanLyChiNhanhRoleId, "WASTAGE", "VIEW", "CREATE");
+    assign(quanLyChiNhanhRoleId, "ORDER", "VIEW", "CREATE", "PAY", "CANCEL");
     assign(quanLyChiNhanhRoleId, "INGREDIENT", "VIEW");
     assign(quanLyChiNhanhRoleId, "PRODUCT", "VIEW");
-    assign(quanLyChiNhanhRoleId, "REPORT", "VIEW");
     assign(quanLyChiNhanhRoleId, "UNIT", "VIEW");
     assign(quanLyChiNhanhRoleId, "RECIPE", "VIEW");
 
@@ -117,8 +126,6 @@ public class DataInitializer implements CommandLineRunner {
     return switch (module + ":" + action) {
       case "USER:VIEW" -> "Xem người dùng";
       case "USER:CREATE" -> "Tạo người dùng";
-      case "USER:UPDATE" -> "Sửa người dùng";
-      case "USER:DELETE" -> "Xóa người dùng";
 
       case "ROLE:VIEW" -> "Xem vai trò";
       case "ROLE:CREATE" -> "Tạo vai trò";
@@ -130,9 +137,6 @@ public class DataInitializer implements CommandLineRunner {
       case "BRANCH:UPDATE" -> "Sửa chi nhánh";
 
       case "PRODUCT:VIEW" -> "Xem sản phẩm";
-      case "PRODUCT:CREATE" -> "Tạo sản phẩm";
-      case "PRODUCT:UPDATE" -> "Sửa sản phẩm";
-      case "PRODUCT:DELETE" -> "Xóa sản phẩm";
 
       case "INGREDIENT:VIEW" -> "Xem nguyên liệu";
       case "INGREDIENT:CREATE" -> "Tạo nguyên liệu";
@@ -155,15 +159,14 @@ public class DataInitializer implements CommandLineRunner {
 
       case "WASTAGE:VIEW" -> "Xem hao hụt";
       case "WASTAGE:CREATE" -> "Báo hao hụt";
-      case "WASTAGE:UPDATE" -> "Sửa hao hụt";
 
       case "ORDER:VIEW" -> "Xem đơn hàng";
       case "ORDER:CREATE" -> "Tạo đơn hàng";
       case "ORDER:PAY" -> "Thanh toán đơn";
       case "ORDER:CANCEL" -> "Hủy đơn hàng";
-      case "ORDER:REFUND" -> "Hoàn tiền đơn";
 
-      case "REPORT:VIEW" -> "Xem báo cáo";
+      case "REPORT:VIEW" -> "Xem bao cao thong ke";
+
 
       case "UNIT:VIEW" -> "Xem đơn vị tính";
       case "UNIT:CREATE" -> "Tạo đơn vị tính";
