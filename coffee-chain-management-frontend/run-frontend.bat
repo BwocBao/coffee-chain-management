@@ -1,5 +1,5 @@
 @echo off
 echo Starting Coffee Chain Frontend...
-echo Make sure backend is running at http://localhost:8080
+echo Backend URL is configured in src\main\java\com\coffeechain\config\ApiConfig.java
 mvn exec:java
 pause

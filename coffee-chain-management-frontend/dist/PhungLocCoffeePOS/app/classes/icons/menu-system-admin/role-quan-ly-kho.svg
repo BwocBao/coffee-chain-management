@@ -1,0 +1,17 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Quan ly kho</title>
+  <path d="M10 13C10 11.3 11.3 10 13 10C14.7 10 16 11.3 16 13V52H48V13C48 11.3 49.3 10 51 10C52.7 10 54 11.3 54 13V55C54 56.7 52.7 58 51 58H13C11.3 58 10 56.7 10 55V13Z" fill="#C67C4E"/>
+  <path d="M14 28H50" stroke="white" stroke-width="5" stroke-linecap="round"/>
+  <path d="M17 50H47" stroke="white" stroke-width="5" stroke-linecap="round"/>
+  <rect x="19" y="15" width="13" height="11" rx="2" fill="#C67C4E" stroke="white" stroke-width="3"/>
+  <rect x="34" y="15" width="13" height="11" rx="2" fill="#C67C4E" stroke="white" stroke-width="3"/>
+  <rect x="20" y="33" width="24" height="13" rx="2" fill="#C67C4E" stroke="white" stroke-width="3"/>
+  <path d="M25 15V22L28 20L31 22V15" fill="#B66F43"/>
+  <path d="M39 15V22L42 20L45 22V15" fill="#B66F43"/>
+  <path d="M28 33V41L32 38.5L36 41V33" fill="#B66F43"/>
+  <rect x="41" y="31" width="17" height="25" rx="4" fill="white"/>
+  <rect x="43" y="33" width="13" height="21" rx="3" fill="#C67C4E"/>
+  <path d="M49.5 38V48" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M46 41.5L49.5 38L53 41.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M46 46L49.5 49.5L53 46" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -98,8 +98,8 @@ public class QuanLyDonHangFrame extends JFrame {
   private final JPanel root = new JPanel(new BorderLayout());
   private final CardLayout cardLayout = new CardLayout();
   private final JPanel mainContent = new JPanel(cardLayout);
-  private final JButton[] tabButtons = new JButton[3];
-  private final String[] tabNames = {"Tạo đơn hàng", "Hủy đơn hàng", "Thanh toán"};
+  private final JButton[] tabButtons = new JButton[2];
+  private final String[] tabNames = {"T\u1ea1o \u0111\u01a1n h\u00e0ng", "Thanh to\u00e1n"};
   private final JTextField productSearchField = createSearchField("Tìm sản phẩm");
   private final JPanel productGrid = new JPanel(new GridLayout(0, 4, 12, 12));
   private final JPanel cartList = new JPanel();
@@ -141,7 +141,7 @@ public class QuanLyDonHangFrame extends JFrame {
     JLabel title = new JLabel("QUẢN LÝ ĐƠN HÀNG");
     title.setForeground(ACCENT_DARK);
     title.setFont(UiTheme.bold(30));
-    JLabel subtitle = new JLabel("Tạo hóa đơn POS, hủy đơn chờ thanh toán và xác nhận thanh toán");
+    JLabel subtitle = new JLabel("T\u1ea1o h\u00f3a \u0111\u01a1n POS v\u00e0 x\u00e1c nh\u1eadn thanh to\u00e1n");
     subtitle.setForeground(MUTED);
     subtitle.setFont(UiTheme.regular(14));
     titles.add(title, BorderLayout.NORTH);
@@ -263,7 +263,7 @@ public class QuanLyDonHangFrame extends JFrame {
     filters.setOpaque(false);
     filters.add(wrapField("Tìm mã đơn", orderSearchField));
     filters.add(wrapCombo("Trạng thái", orderStatusCombo));
-    JLabel hint = new JLabel(cancelMode ? "Chọn đơn chờ thanh toán để hủy" : "Chọn đơn chờ thanh toán để trả tiền");
+    JLabel hint = new JLabel("Ch\u1ecdn \u0111\u01a1n ch\u1edd thanh to\u00e1n \u0111\u1ec3 h\u1ee7y ho\u1eb7c x\u00e1c nh\u1eadn thanh to\u00e1n");
     hint.setForeground(MUTED);
     hint.setFont(UiTheme.regular(12));
     topFilters.add(filters, BorderLayout.CENTER);
@@ -277,7 +277,7 @@ public class QuanLyDonHangFrame extends JFrame {
     panel.add(orderDetailPanel, BorderLayout.EAST);
     orderSearchField.getDocument().addDocumentListener(doc(this::loadOrders));
     orderStatusCombo.addActionListener(e -> loadOrders());
-    orderTable.getSelectionModel().addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) loadSelectedOrder(cancelMode); });
+    orderTable.getSelectionModel().addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) loadSelectedOrder(false); });
     return panel;
   }
 
@@ -779,7 +779,7 @@ public class QuanLyDonHangFrame extends JFrame {
           orderSearchField.setText("");
           if (orderStatusCombo.getItemCount() > 0) orderStatusCombo.setSelectedIndex(0);
           showInfo("Tạo đơn hàng thành công. Chuyển sang thanh toán đơn #" + pendingOpenOrderId);
-          switchTab(2);
+          switchTab(1);
         } catch (Exception ex) {
           showError("Không mở được đơn vừa tạo: " + ex.getMessage());
         }
@@ -864,18 +864,7 @@ public class QuanLyDonHangFrame extends JFrame {
 
     boolean pending = isPending(order);
     boolean paid = isPaid(order);
-    if (cancelMode) {
-      RoundedButton cancel = dangerButton("Hủy đơn hàng");
-      cancel.setEnabled(pending);
-      cancel.addActionListener(e -> cancelOrder(order.getMaHoaDon()));
-      footer.add(cancel);
-      if (!pending) {
-        JLabel note = new JLabel("Chỉ hủy được đơn đang chờ thanh toán.");
-        note.setForeground(MUTED);
-        note.setFont(UiTheme.regular(12));
-        footer.add(note);
-      }
-    } else if (paid) {
+    if (paid) {
       JLabel done = new JLabel("Thanh toán hoàn tất");
       done.setForeground(SUCCESS);
       done.setFont(UiTheme.bold(15));
@@ -884,14 +873,24 @@ public class QuanLyDonHangFrame extends JFrame {
       print.addActionListener(e -> printReceipt(order));
       footer.add(print);
     } else {
-      RoundedButton cash = primaryButton("Thanh toán tiền mặt");
+      RoundedButton cancel = dangerButton("H\u1ee7y \u0111\u01a1n");
+      cancel.setEnabled(pending);
+      cancel.addActionListener(e -> cancelOrder(order.getMaHoaDon()));
+      RoundedButton cash = primaryButton("Thanh to\u00e1n ti\u1ec1n m\u1eb7t");
       cash.setEnabled(pending);
       cash.addActionListener(e -> payCash(order.getMaHoaDon()));
-      RoundedButton bank = secondaryButton("Thanh toán QR");
+      RoundedButton bank = secondaryButton("Thanh to\u00e1n QR");
       bank.setEnabled(pending);
       bank.addActionListener(e -> createBankQr(order.getMaHoaDon()));
+      footer.add(cancel);
       footer.add(cash);
       footer.add(bank);
+      if (!pending) {
+        JLabel note = new JLabel("Ch\u1ec9 h\u1ee7y ho\u1eb7c thanh to\u00e1n \u0111\u01b0\u1ee3c \u0111\u01a1n \u0111ang ch\u1edd thanh to\u00e1n.");
+        note.setForeground(MUTED);
+        note.setFont(UiTheme.regular(12));
+        footer.add(note);
+      }
     }
     card.add(footer, BorderLayout.SOUTH);
     orderDetailPanel.add(card, BorderLayout.CENTER);
@@ -948,7 +947,7 @@ public class QuanLyDonHangFrame extends JFrame {
       mainContent.add(buildCreateOrderPanel(), "0");
       cardLayout.show(mainContent, "0");
     } else {
-      mainContent.add(buildOrderActionPanel(idx == 1), String.valueOf(idx));
+      mainContent.add(buildOrderActionPanel(false), String.valueOf(idx));
       cardLayout.show(mainContent, String.valueOf(idx));
       orderDetailPanel.removeAll();
       orderDetailPanel.revalidate();

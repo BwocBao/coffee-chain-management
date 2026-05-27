@@ -1052,8 +1052,8 @@ public class InventoryApiClient extends ApiClientSupport {
     private BigDecimal donGiaNhap;
 
     /*
-     * Để String cho dễ parse.
-     * Tránh lỗi nếu backend trả DATE/TIMESTAMP ở format khác nhau.
+     * Äá»ƒ String cho dá»… parse.
+     * TrĂ¡nh lá»—i náº¿u backend tráº£ DATE/TIMESTAMP á»Ÿ format khĂ¡c nhau.
      */
     @JsonAlias({"hanSuDung", "expiryDate"})
     private String hanSuDung;
@@ -1238,6 +1238,7 @@ public class InventoryApiClient extends ApiClientSupport {
     private Long maPhieuXuat;
     private String tenKho;
     private String loaiXuat;
+    private String trangThai;
     private BigDecimal tongGiaTriXuat;
     private int soDongChiTiet;
     private LocalDateTime ngayXuat;
@@ -1264,6 +1265,14 @@ public class InventoryApiClient extends ApiClientSupport {
 
     public void setLoaiXuat(String loaiXuat) {
       this.loaiXuat = loaiXuat;
+    }
+
+    public String getTrangThai() {
+      return trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+      this.trangThai = trangThai;
     }
 
     public BigDecimal getTongGiaTriXuat() {

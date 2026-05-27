@@ -1,0 +1,14 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Quan ly chi nhanh</title>
+  <path d="M16 26H46V53H16V26Z" fill="#C67C4E"/>
+  <path d="M13 20H49L45 11H17L13 20Z" fill="#C67C4E"/>
+  <path d="M13 20H49V24C49 27.3 46.3 30 43 30C40.8 30 38.9 28.8 37.8 27C36.8 28.8 34.9 30 32.8 30C30.7 30 28.8 28.8 27.8 27C26.7 28.8 24.8 30 22.6 30C19.3 30 16.6 27.3 16.6 24C16.6 27.3 13.9 30 10.6 30C9.7 30 9 29.3 9 28.4V24C9 21.8 10.8 20 13 20Z" fill="#C67C4E" stroke="white" stroke-width="3"/>
+  <rect x="21" y="35" width="9" height="18" rx="2" fill="white"/>
+  <rect x="34" y="35" width="9" height="9" rx="2" fill="white"/>
+  <path d="M14 53H48" stroke="#C67C4E" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="47" cy="44" r="12" fill="#C67C4E" stroke="white" stroke-width="4"/>
+  <circle cx="47" cy="40" r="3.5" fill="white"/>
+  <path d="M40.5 51C41.7 46.7 44 44.7 47 44.7C50 44.7 52.3 46.7 53.5 51" fill="white"/>
+  <circle cx="54" cy="52" r="6" fill="#C67C4E" stroke="white" stroke-width="3"/>
+  <path d="M51.2 52L53.2 54L57 49.8" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

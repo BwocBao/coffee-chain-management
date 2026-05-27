@@ -1,13 +1,12 @@
 package com.coffeechain.config;
 
 /**
- * Táº­p trung toĂ n bá»™ URL backend mĂ  frontend gá»i tá»›i. Khi Ä‘á»•i port, domain hoáº·c
- * prefix API, Æ°u tiĂªn sá»­a á»Ÿ Ä‘Ă¢y thay vĂ¬ sá»­a ráº£i rĂ¡c trong cĂ¡c API client.
+ * Tap trung toan bo URL backend ma frontend goi toi.
+ * Khi doi local/ngrok/server, chi can sua BASE_URL o day.
  */
 public class ApiConfig {
   private ApiConfig() {}
-//    https://unvulgarly-unfueled-mozella.ngrok-free.dev
-//    http://localhost:8080"
+  // Backend URL hien tai cua frontend.
   public static final String BASE_URL = "https://unvulgarly-unfueled-mozella.ngrok-free.dev";
   public static final String LOGIN_URL = BASE_URL + "/api/auth/login";
   public static final String FORGOT_PASSWORD_URL = BASE_URL + "/api/auth/forgot-password";
@@ -74,3 +73,4 @@ public class ApiConfig {
   public static final String POS_PRODUCTS_URL = BASE_URL + "/api/pos/products";
   public static final String POS_ORDERS_URL = BASE_URL + "/api/pos/orders";
 }
+
