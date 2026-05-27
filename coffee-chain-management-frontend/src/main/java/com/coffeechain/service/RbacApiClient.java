@@ -1,5 +1,6 @@
 package com.coffeechain.service;
 
+import com.coffeechain.config.ApiConfig;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +19,7 @@ import java.util.Set;
  * permission và lưu quyền cho role.
  */
 public class RbacApiClient {
-  private static final String BASE_URL = "http://localhost:8080/api";
+  private static final String BASE_URL = ApiConfig.BASE_URL + "/api";
 
   private final HttpClient httpClient = HttpClient.newHttpClient();
   private final ObjectMapper objectMapper = new ObjectMapper();

@@ -6,7 +6,8 @@ package com.coffeechain.config;
  */
 public class ApiConfig {
   private ApiConfig() {}
-
+//    https://unvulgarly-unfueled-mozella.ngrok-free.dev
+//    http://localhost:8080"
   public static final String BASE_URL = "https://unvulgarly-unfueled-mozella.ngrok-free.dev";
   public static final String LOGIN_URL = BASE_URL + "/api/auth/login";
   public static final String FORGOT_PASSWORD_URL = BASE_URL + "/api/auth/forgot-password";
