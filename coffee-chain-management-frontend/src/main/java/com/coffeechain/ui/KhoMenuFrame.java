@@ -41,7 +41,7 @@ public class KhoMenuFrame extends JFrame {
 
   private static final String ICON_BACK = "icons/menu-kho/left.svg";
   // Dien duong dan file .pbix tren may chay frontend, vi du: C:\\reports\\bao-cao-thong-ke.pbix
-  private static final String POWER_BI_REPORT_PATH = "";
+  private static final String POWER_BI_REPORT_PATH = "C:\\Users\\ASUS\\OneDrive\\Desktop\\cafeapp.pbix";
 
   private final JPanel contentPanel = new JPanel(null);
   private final List<FeatureMenuCard> menuCards = new ArrayList<>();
